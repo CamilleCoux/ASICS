@@ -18,13 +18,18 @@ source("functions.R")
 
 d <- read.csv("../data/David_plantes_KerCro/2022_TAAF_HFI_plants_data.csv",  sep=";", row.names = NULL,
               stringsAsFactors = T)
-topo <- r
+# d_env <- read.csv("../data/David_plantes_KerCro/2022_TAAF_HFI_plants_data_complete.csv",  sep=";", row.names = NULL,
+#                   stringsAsFactors = T)
+  
 # add index:
 d %<>% 
   add_column(id = 1:nrow(d), .after=0)
 head(d)
 # separate date component in different columns:
 d[c("jour", "mois", "annee")] <- str_split_fixed(d$date_observation, "/", 3)
+
+
+
 
 
 # Native plants that are present on both Cro and Ker : 
@@ -111,8 +116,6 @@ foo <- nats %>%
 cro <- st_read("../data/SIG/Contours/CRO_contours.shp")
 p <- ggplot() + geom_sf(data = cro)
 
-
-ggplot() + geom_sf(data=cro) + geom_sf(data=foo)
 plotlist <- list()
 count = 1
 for (i in 2010:2022){
@@ -123,7 +126,7 @@ for (i in 2010:2022){
   count=count+1
 }
 
-multiplot(plotlist)
+multiplot(plotlist, cols = 2)
 
 
 
@@ -140,6 +143,78 @@ ggplot()+
 
 
 
+# doesn't look like there are 41k points there
 
+nats$latitude %>% unique %>% length()
+nats$longitude %>% unique %>% length()
+
+nats$longlat <- paste(nats$longitude, nats$latitude, sep=",") 
+nats$longlat %>% unique %>% length
+
+nats$numero_observation %>% unique %>% length
+
+nats %>%
+  count(numero_observation) %>% 
+  select(n) %>% unlist %>% 
+  hist
+
+
+
+### KERGUELEN
+
+# plot occurrences just to have an idea : 
+
+
+foo <- nats %>% 
+  filter(district =="Kerguelen", annee >= 2010) 
+
+
+
+# carte
+ker <- st_read("../data/SIG/Contours/KER_contours.shp")
+p <- ggplot() + geom_sf(data = ker)
+
+plotlist <- list()
+count = 1
+for (i in 2010:2022){
+  pp <- p
+  pp <-pp + geom_point(data = foo %>% filter(annee == i), 
+                       aes(x=longitude, y = latitude, color = annee))
+  plotlist[[count]] <- pp
+  count=count+1
+}
+
+plotlist
+multiplot(plotlist, cols = 2)
+
+
+
+
+nats_sf <- nats %>%
+  filter(district =="Kerguelen") %>%
+  st_as_sf(coords =c("longitude", "latitude"), crs=4326) 
+
+# st_write(nats_sf, "../data/SIG/mes couches/plantes_ker.shp")
+
+ggplot()+
+  geom_sf(data=ker)+
+  geom_sf(data = nats_sf, aes(color=taxon) )
+
+
+
+# doesn't look like there are 41k points there
+
+nats$latitude %>% unique %>% length()
+nats$longitude %>% unique %>% length()
+
+nats$longlat <- paste(nats$longitude, nats$latitude, sep=",") 
+nats$longlat %>% unique %>% length
+
+nats$numero_observation %>% unique %>% length
+
+nats %>%
+  count(numero_observation) %>% 
+  select(n) %>% unlist %>% 
+  hist
 
 
