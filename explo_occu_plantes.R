@@ -1,4 +1,5 @@
-# explo data TAAF envoyées par Pierre A le 8/8/22
+# explo data occurrences TAAF envoyées par Pierre A le 8/8/22
+
 library(magrittr)
 library(tidyverse)
 library(sf)
@@ -12,10 +13,12 @@ source("functions.R")
 
 theme_set(theme_bw())
 
+source("functions.R")
 
 
-d <- read.csv("../data/David_plantes_KerCro/2022_TAAF_HFI_plants_data.csv",  sep=";", row.names = NULL)
-
+d <- read.csv("../data/David_plantes_KerCro/2022_TAAF_HFI_plants_data.csv",  sep=";", row.names = NULL,
+              stringsAsFactors = T)
+topo <- r
 # add index:
 d %<>% 
   add_column(id = 1:nrow(d), .after=0)
@@ -54,7 +57,7 @@ p <- ggplot(abunds %>% filter(district == "Crozet") , aes(x= taxon, y = n))+
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank()) +
   ggtitle("Crozet") + ylab( " # of occurrences")
-  
+p  
 
 
 p2 <- ggplot(abunds %>% filter(district == "Kerguelen") , aes(x= taxon, y = n))+
@@ -67,41 +70,76 @@ p2 <- ggplot(abunds %>% filter(district == "Kerguelen") , aes(x= taxon, y = n))+
 multiplot(p, p2 ,cols = 1)
 
 
+
+# look at the sampling dates
+
+nats %>%
+  count(taxon)
+abunds <- nats %>% 
+  count(district, taxon) %>%
+  group_by(district) %>%
+  mutate(taxon = fct_rev(fct_reorder(taxon, n)))
+
+nats %>%
+  filter(district =="Crozet", annee >=2010) %>%
+  group_by(taxon, annee) %>% 
+  count %>%
+  ggplot(aes(x=as.numeric(annee), y=n, color=taxon)) +
+  geom_line()+
+  ggtitle("Crozet")
+
+nats %>%
+  filter(district =="Kerguelen") %>%
+  group_by(taxon, annee) %>% 
+  count %>%
+  ggplot(aes(x=as.numeric(annee), y=n, color=taxon)) +
+  geom_line()+
+  ggtitle("Kerguelen")
+
+
+
+
+# plot occurrences just to have an idea : 
+
+
+foo <- nats %>% 
+  filter(district =="Crozet", annee >= 2010) 
+
+
+
 # carte
-land <- st_read("../data/ne_10m_land/ne_10m_land.shp")
-coast <- st_read("../data/ne_10m_coastline/ne_10m_coastline.shp")
-world <- ne_countries(scale = "medium", returnclass = "sf")
-class(world)
-
-# plus joli : 
-coast %>% ggplot() + geom_sf()+
-  coord_sf(xlim = c(68.5, 70.7), ylim = c(-48.5, -49.7))
+cro <- st_read("../data/SIG/Contours/CRO_contours.shp")
+p <- ggplot() + geom_sf(data = cro)
 
 
-# dégueu :
-ggplot(data=world) + geom_sf() +
-  coord_sf(xlim = c(68, 71), ylim = c(-48, -50))+
-  
-  
-  
-nats %>% 
-  filter(district =="Crozet", taxon =="Acaena magellanica") %>% 
-  st_as_sf(coords=c("longitude", "latitude"), crs=4326) %>%
-  ggplot() + 
-  geom_sf()
-  
-spdf_france <- ne_countries(country = 'france')
-
-if (require(sp)) {
-  plot(spdf_world)
-  plot(spdf_africa)
-  plot(spdf_france)
+ggplot() + geom_sf(data=cro) + geom_sf(data=foo)
+plotlist <- list()
+count = 1
+for (i in 2010:2022){
+  pp <- p
+  pp <-pp + geom_point(data = foo %>% filter(annee == i), 
+                       aes(x=longitude, y = latitude, color = annee))
+  plotlist[[count]] <- pp
+  count=count+1
 }
 
+multiplot(plotlist)
 
 
-ggplot() +
-  geom_sf(data = cdn) + coord_sf(crs = st_crs(4326))
 
 
-data("cdn")
+nats_sf <- nats %>%
+  filter(district =="Crozet") %>%
+  st_as_sf(coords =c("longitude", "latitude"), crs=4326) 
+
+# st_write(nats_sf, "../data/SIG/mes couches/plantes_cro.shp")
+
+ggplot()+
+  geom_sf(data=cro)+
+  geom_sf(data = nats_sf, aes(color=taxon) )
+
+
+
+
+
+
