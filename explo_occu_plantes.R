@@ -218,3 +218,20 @@ nats %>%
   hist
 
 
+d$protocole %>% unique
+
+
+
+########### Now look at the environmental measures
+
+d_env <- read.csv("../data/David_plantes_KerCro/2022_TAAF_HFI_plants_data_complete.csv",  sep=";", row.names = NULL,
+              stringsAsFactors = T)
+head(d_env)
+
+
+d_env$protocole %>% unique
+d$protocole %>% unique
+
+d %>% 
+  filter(protocole %in% (d_env$protocole %>% unique)) %>%
+  dim
