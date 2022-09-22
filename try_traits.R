@@ -60,7 +60,71 @@ Notogrammitis <- try_sp[grep("Notogrammitis", try_sp$AccSpeciesName),] # 0, just
 
 # get the AccNum:
 essai$AccSpeciesID
+essai$AccSpeciesName
+
+# read in the trait data downloaded from TRY webversion : 
+
+tr <- read.csv("../data/David_plantes_KerCro/22563.txt", sep="\t")
+
+
+# retrieve the genbank sequences for the remL gene, and the MEtK
+library(rentrez)
+
+path <- "../data/David_plantes_KerCro/"
+
+# We want a character vector of the nucleotide database --> nuccore  
+# retmax determines the max number of hits
+
+
+colker <- "Colobanthus kerguelensis[Organism] AND rbcL[gene]"    
+colker_search <- entrez_search(db="nuccore", term=colker, retmax=40) 
+colker_seqs <- entrez_fetch(db="nuccore", id=colker_search$ids, rettype="fasta")
 
 
 
+calant <- "Callitriche antarctica[Organism] AND rbcL[gene]"
+calant_search <- entrez_search(db="nuccore", term=calant, retmax=10)
+calant_search$ids
+
+
+
+calant_seqs <- entrez_fetch(db="nuccore", id=calant_search$ids, rettype="fasta")
+write(c(colker_seqs, calan_seqs), paste(path, "Callitriche antarctica.fasta", sep=""), sep="\n") #gets sequence to a file
+
+
+# loop over plant names and retrieve all sequences. Priority to rbcL, but 
+# otherwise all
+
+seqs <- essai$AccSpeciesName %>% 
+  as.list %>%
+  lapply(., get_seq, gene="rbcL")
+
+seq_list <- empty_list <- vector(mode='list', length=nrow(essai))
+count=1
+for (i in essai$AccSpeciesName){
+  # query for the rbcL gene
+  colker <- paste(i, "[Organism] AND rbcL[gene]", sep="")    
+  colker_search <- entrez_search(db="nuccore", term=colker, retmax=10) 
+  
+  #query for the matK gene
+  colker2 <- paste(i, "[Organism] AND matK[gene]", sep="")    
+  colker_search2 <- entrez_search(db="nuccore", term=colker2, retmax=10)
+  
+  if (colker_search$retmax == 0){
+    colker <- paste(i, "[Organism]", sep="")    
+    colker_search <- entrez_search(db="nuccore", term=colker, retmax=10)
+  }
+  
+  if (!is.null(colker_search) & !is.null(colker_search2)){
+    seq_list[[count]]  <- entrez_fetch(db="nuccore", id=colker_search$ids, rettype="fasta")
+    count = count +1
+    seq_list[[count]]  <- entrez_fetch(db="nuccore", id=colker_search2$ids, rettype="fasta")
+  }else{
+    seq_list[[count]] <- entrez_fetch(db="nuccore", id=colker_search$ids, rettype="fasta")
+  }
+  count=count+1
+}
+
+
+write(seq_list%>% unlist, paste(path, "seqs.fasta", sep=""), sep="\n") #gets sequence to a file
 

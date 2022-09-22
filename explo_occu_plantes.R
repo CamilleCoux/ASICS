@@ -9,18 +9,20 @@ library(rnaturalearth)
 library(rnaturalearthdata)
 library(osmdata)
 library(ggmap)
-source("functions.R")
 
 theme_set(theme_bw())
 
 source("functions.R")
 
 
-d <- read.csv("../data/David_plantes_KerCro/2022_TAAF_HFI_plants_data.csv",  sep=";", row.names = NULL,
-              stringsAsFactors = T)
-# d_env <- read.csv("../data/David_plantes_KerCro/2022_TAAF_HFI_plants_data_complete.csv",  sep=";", row.names = NULL,
-#                   stringsAsFactors = T)
-  
+#d <- read.csv("../data/David_plantes_KerCro/2022_TAAF_HFI_plants_data.csv",  sep=";", row.names = NULL,
+#              stringsAsFactors = T)
+#d <- readr::read_delim("../data/David_plantes_KerCro/202209_TAAF_HFI_plants_data_complete.csv",  delim=";", 
+                       #locale = locale(encoding = "ISO-8859-1"))
+#d <- readr::write_delim(d, "../data/David_plantes_KerCro/202209_TAAF_HFI_plants_data_complete_UTF8.csv",  delim=";")
+
+d <- readr::read_delim("../data/David_plantes_KerCro/202209_TAAF_HFI_plants_data_complete_UTF8.csv",  delim=";", locale = locale(encoding = "UTF-8"))
+
 # add index:
 d %<>% 
   add_column(id = 1:nrow(d), .after=0)
@@ -29,8 +31,41 @@ head(d)
 d[c("jour", "mois", "annee")] <- str_split_fixed(d$date_observation, "/", 3)
 
 
+### dealing with the surface column :
+
+d$surface %>% unique %>% head(50)
+d$surface %<>% as.character
+d$surface_orig <- d$surface
+# deal with decimals
+d$surface <-  gsub(",", "\\.", d$surface)
+# remove blank spaces
+d$surface <-  gsub(" ", "", d$surface)
+# replace with NA when necessary
+d$surface[d$surface == ""|d$surface == "#N/A"] <- NA
+# remove all non-numeric characters
+d$surface <- gsub("[A-z]+.|[A-z]", "", d$surface)
+# remove punctuation
+d$surface <- gsub("\\?{1-4}|\\!{1-4}", "", d$surface)
+# again replace with NA when necessary
+d$surface[d$surface == ""] <- NA
+
+# selecting only the numeric entries means half the data is ignored
+c(d$surface[grep("^[0-9]+\\*[0-9]+$|NA", d$surface)], which(is.na(d$surface))) %>% length
+# replace x by *
+d$surface <-  gsub("100100m", "100*100m", d$surface)
+d$surface %<>% as.factor
 
 
+d$surf2 <- NA
+cells <- grep("^[0-9]+\\*[0-9]+$", d$surface)
+
+for (i in cells){
+  d$surf2[i] <- eval(parse(text=d$surface[i] ))
+}
+
+d$surf2 <- as.numeric(d$surf2)
+
+d$surf2 %>% barplot
 
 # Native plants that are present on both Cro and Ker : 
 natives <- d %>% 
@@ -129,20 +164,32 @@ for (i in 2010:2022){
 multiplot(plotlist, cols = 2)
 
 
-
-
 nats_sf <- nats %>%
   filter(district =="Crozet") %>%
   st_as_sf(coords =c("longitude", "latitude"), crs=4326) 
 
-# st_write(nats_sf, "../data/SIG/mes couches/plantes_cro.shp")
+
+atlas_sf <- nats %>%
+  filter(district =="Crozet", protocole =="Atlas") %>%
+  st_as_sf(coords =c("longitude", "latitude"), crs=4326) 
+
+# st_write(nats_sf, "../data/SIG/mes couches/plantes_cro.shp", append=F)
+# st_write(atlas_sf, "../data/SIG/mes couches/atlas_cro.shp", append=F)
+
+
+mailles_atlas <- st_read("../data/David_plantes_KerCro/Mailles ATLAS/2020_CRO_Atlas_mailles.shp")
+ggplot()+
+  geom_sf(data=cro)+
+  geom_sf(data = nats_sf, aes(color=taxon) ) +
+  #geom_sf(data = atlas_sf, aes(color="green") ) +
+  geom_sf(data = mailles_atlas, alpha = .15, color="darkblue")+ 
+  theme(legend.position = "none")
+
 
 ggplot()+
   geom_sf(data=cro)+
-  geom_sf(data = nats_sf, aes(color=taxon) )
-
-
-
+  geom_sf(data = atlas_sf, aes(color="green") ) +
+  geom_sf(data = mailles_atlas, alpha = .15, color="darkblue")
 # doesn't look like there are 41k points there
 
 nats$latitude %>% unique %>% length()
@@ -155,8 +202,58 @@ nats$numero_observation %>% unique %>% length
 
 nats %>%
   count(numero_observation) %>% 
-  select(n) %>% unlist %>% 
+  select(n) %>% unlist %>%
   hist
+
+# Luis' idea : round th XY coords to the 4th or 5 decimal and consider they
+# are in the same plot.
+
+nats2 <- nats %>% 
+  select(numero_observation, longitude, latitude) %>%
+  summarise(numero_observation = numero_observation,
+            long2 = round(longitude, digits = 4),
+            lat2 = round(latitude, digits = 4),
+            site = paste(long2, lat2, sep = "/") %>% as.factor %>% as.numeric) %>%
+  left_join(nats, ., keep=F)
+
+nats2$site %>% unique %>% length
+nats2$numero_observation %>% unique %>% length
+
+nats2 %>%
+  count(site) %>% 
+  select(n) %>% unlist %>% mean
+  hist
+  
+  nats %>%
+    count(numero_observation) %>% 
+    select(n) %>% unlist %>%
+    hist
+
+nats2 %>%
+  filter(district =="Crozet") %>%
+  ggplot()+
+  geom_point(aes(x=longitude, y=latitude, color="red")) + 
+  geom_point(aes(x=long2, y=lat2)) 
+
+nats %>% filter(protocole == "Inventaire") %>%
+  group_by(district) %>%
+  select(surface) %>% unique %>% print(., n=150)
+
+d$surface %>% unique
+# 
+# nats2 <- nats
+# nats$surface <- d$surface[d$id %in% nats$id]
+# 
+# 
+# 
+# summary(foo)
+# 
+# hist(foo %>% as.numeric %>% log, breaks = 50)
+# # I want to calculate all the surfaces, so I need to have R evaluate the surface
+# # expressions as a calculus.
+
+
+
 
 
 
@@ -205,6 +302,7 @@ ggplot()+
 # doesn't look like there are 41k points there
 
 nats$latitude %>% unique %>% length()
+
 nats$longitude %>% unique %>% length()
 
 nats$longlat <- paste(nats$longitude, nats$latitude, sep=",") 
@@ -218,20 +316,7 @@ nats %>%
   hist
 
 
-d$protocole %>% unique
+nats %>%
+  group_by(protocole) %>%
+  count
 
-
-
-########### Now look at the environmental measures
-
-d_env <- read.csv("../data/David_plantes_KerCro/2022_TAAF_HFI_plants_data_complete.csv",  sep=";", row.names = NULL,
-              stringsAsFactors = T)
-head(d_env)
-
-
-d_env$protocole %>% unique
-d$protocole %>% unique
-
-d %>% 
-  filter(protocole %in% (d_env$protocole %>% unique)) %>%
-  dim

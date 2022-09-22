@@ -20,3 +20,11 @@ read.granules(local, F, T, name = "Ker_DEM")
 
 read.granules("../data/DEM/cro", T, T, "Cro_DEM")
 
+
+
+
+library(biogeo)
+
+data(dem)
+plot(dem)
+str(dem)
