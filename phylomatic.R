@@ -1,6 +1,9 @@
 library(taxize)
 library(brranching)
 library(ape)
+library(magrittr)
+library(tidyverse)
+pacman::p_load(tidyverse, Hmsc,  writexl, taxize, brranching, ape, factoextra, NbClust, compiler)
 
 
 try_sp <- read.csv("../data/TryAccSpecies.txt", sep="\t")
@@ -11,6 +14,15 @@ essai <- try_sp %>%
 
 
 taxa <- essai$AccSpeciesName
+
+phylo_names <- phylomatic_names(taxa, format='isubmit', db="ncbi")
+
+foo <-phylo_names[1] 
+for (i in 2:length(phylo_names)){
+  foo <- paste(foo, phylo_names[i], sep=" ")
+}
+
+foo <- paste(phylo_names, sep=" ")
 
 tree <- phylomatic(taxa=taxa, get = 'POST')
 plot(tree, no.margin=TRUE)
@@ -30,29 +42,59 @@ phylo_names <- phylomatic_names(taxa, format='isubmit', db="ncbi")
 tree <- phylomatic(taxa=taxa, storedtree='R20120829', get='POST')
 plot(tree, no.margin=TRUE)
 
-# Lots of names
-taxa <- c("Poa annua", "Collomia grandiflora", "Lilium lankongense", "Phlox diffusa",
-          "Iteadaphne caudata", "Gagea sarmentosa", "Helianthus annuus")
-tree <- phylomatic(taxa=taxa, get = 'POST')
-plot(tree, no.margin=TRUE)
+phylo_tree <- brranching::phylomatic(phylo_names, db="apg", storedtree="zanne2014", outformat="newick")
+####### 
+# trial from tree Luis sent me :
 
-# Don't clean - clean=TRUE is default
-(tree <- phylomatic(taxa=taxa, clean = FALSE))
-## with clean=FALSE, you can get non-splitting nodes, which you
-## need to collpase before plotting
-library('ape')
-plot(collapse.singles(tree), no.margin=TRUE)
+Quian_tree <-  read.tree(file=paste0("../Code/Qian_Jin_2016_tree.txt"))
+Quian_tree$tip.label %>% head
 
-# Output NeXML format
-taxa <- c("Gonocarpus leptothecus", "Gonocarpus leptothecus", "Lilium lankongense")
-out <- phylomatic(taxa=taxa, get = 'POST', outformat = "nexml")
-cat(out)
+# need to change the synthax of taxa to compare them with the Quian tree labels
+taxa <- gsub(" ", "_", taxa)
+(taxa2 %in% Quian_tree$tip.label) 
 
-# Lots of names, note that when you have enough names (number depends on length of individual
-# names, so there's no per se rule), you will get an error when using `get='GET'`,
-# when that happens use `get='POST'`
-library("taxize")
-spp <- names_list("species", 500)
-# phylomatic(taxa = spp, get = "GET")
-(out <- phylomatic(taxa = spp, get = "POST", db = "itis"))
-plot(out)
+# Replacing with sister species : 
+grep("Galium", Quian_tree$tip.label, value = T)
+
+taxa2 <- gsub("Callitriche_antarctica", "Callitriche_deflexa", taxa )
+
+
+### make the example file
+c1 <- c("Carya floridana", "Carya pallida", "Epiprinus siletianus", "Platycarya strobilacea", "Tilia amurensis", "Apodanthes caseariae", "Pilostyles blanchetii")
+c2 <- c("Carya", "Carya", "Epiprinus", "Platycarya", "Tilia", "Apodanthes", "Pilostyles")
+c3 <- c("Juglandaceae", "Juglandaceae", "Euphorbiaceae", "Juglandaceae", "Malvaceae", "Apodanthaceae", "Apodanthaceae")
+example <- data.frame(species = c1, genus = c2, family = c3)
+
+### run the function
+result <- phylo.maker(example, scenarios=c("S1","S2","S3"))
+
+### plot the phylogenies with node ages displayed.
+library(ape)
+par(mfrow = c(1, 3))
+plot.phylo(result$scenario.1, cex = 1.5, main = "scenario.1")
+nodelabels(round(branching.times(result$scenario.1), 1), cex = 1)
+plot.phylo(result$scenario.2[[1]], cex = 1.5, main = "scenario.2")
+nodelabels(round(branching.times(result$scenario.2[[1]]), 1), cex = 1)
+plot.phylo(result$scenario.3, cex = 1.5, main = "scenario.3")
+nodelabels(round(branching.times(result$scenario.3), 1), cex = 1)
+
+
+
+
+# trial with my species :
+?str_split
+
+sp_tab <- str_split_fixed(phylo_names, "/", 3) %>% data.frame 
+colnames(sp_tab) = c("family", "genus", "species")
+sp_tab <- sp_tab[, c(3, 2, 1)]
+
+result2 <- phylo.maker(sp_tab, scenarios=c("S1","S2","S3"))
+
+library(ape)
+par(mfrow = c(1, 1))
+plot.phylo(result2$scenario.1, cex = 1.5, main = "scenario.3")
+nodelabels(round(branching.times(result2$scenario.3), 1), cex = 1)
+
+
+
+

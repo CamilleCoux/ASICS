@@ -17,7 +17,7 @@ theme_set(theme_bw())
 source("functions.R")
 
 
-d <- read.csv("../data/David_plantes_KerCro/2022_TAAF_HFI_plants_data.csv",  sep=";", row.names = NULL,
+d <- read.csv("../data/David_plantes_KerCro/202209_TAAF_HFI_plants_data_complete_UTF8.csv",  sep=";", row.names = NULL,
               stringsAsFactors = T)
 # d_env <- read.csv("../data/David_plantes_KerCro/2022_TAAF_HFI_plants_data_complete.csv",  sep=";", row.names = NULL,
 #                   stringsAsFactors = T)
@@ -51,7 +51,7 @@ head(try_sp)
 essai <- try_sp %>%
   filter(AccSpeciesName %in% natives)
 
-not <- natives[-which(natives %in% try_sp$AccSpeciesName)] %>% droplevels()
+not <- natives[-which(natives %in% try_sp$AccSpeciesName)] 
 not <- not[-3]
 
 Colobanthus <- try_sp[grep("Colobanthus", try_sp$AccSpeciesName),]
@@ -115,7 +115,7 @@ for (i in essai$AccSpeciesName){
     colker_search <- entrez_search(db="nuccore", term=colker, retmax=10)
   }
   
-  if (!is.null(colker_search) & !is.null(colker_search2)){
+  if (!is_empty(colker_search[[1]]) & !is_empty(colker_search2[[1]])){
     seq_list[[count]]  <- entrez_fetch(db="nuccore", id=colker_search$ids, rettype="fasta")
     count = count +1
     seq_list[[count]]  <- entrez_fetch(db="nuccore", id=colker_search2$ids, rettype="fasta")
