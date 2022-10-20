@@ -53,7 +53,7 @@ d$surface[d$surface == ""] <- NA
 c(d$surface[grep("^[0-9]+\\*[0-9]+$|NA", d$surface)], which(is.na(d$surface))) %>% length
 # replace x by *
 d$surface <-  gsub("100100m", "100*100m", d$surface)
-d$surface %<>% as.factor
+d$surface %>% as.factor %>% unique
 
 
 d$surf2 <- NA
@@ -64,8 +64,9 @@ for (i in cells){
 }
 
 d$surf2 <- as.numeric(d$surf2)
+d$surf2 %>% summary
 
-d$surf2 %>% barplot
+
 
 # Native plants that are present on both Cro and Ker : 
 natives <- d %>% 

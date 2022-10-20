@@ -10,6 +10,7 @@ library(rnaturalearthdata)
 library(osmdata)
 library(ggmap)
 library(rtry)
+library(rentrez)
 source("functions.R")
 
 theme_set(theme_bw())
@@ -94,10 +95,85 @@ write(c(colker_seqs, calan_seqs), paste(path, "Callitriche antarctica.fasta", se
 
 # loop over plant names and retrieve all sequences. Priority to rbcL, but 
 # otherwise all
+library(traits)
 
+# try dirty method where I only keep the longest sequences : 
+# for rbcL :
 seqs <- essai$AccSpeciesName %>% 
   as.list %>%
-  lapply(., get_seq, gene="rbcL")
+  lapply(., ncbi_byname, gene="rbcL") 
+  
+# I only need to kee the sequences and the species names
+sp_names <-  lapply(seqs, function(x){return(x$taxon)})
+rbcl_sequences <-  lapply(seqs, function(x){return(x$sequence)})
+
+seqinr::write.fasta(rbcl_sequences, file.out =paste(path, "seqinr_rcbl.fasta", sep=""), names = sp_names)
+
+# and now with matK gene :
+seqs <- essai$AccSpeciesName %>% 
+  as.list %>%
+  lapply(., ncbi_byname, gene="matK") 
+
+# I only need to kee the sequences and the species names
+sp_names <-  lapply(seqs, function(x){return(x$taxon)})
+matk_sequences <-  lapply(seqs, function(x){return(x$sequence)})
+
+seqinr::write.fasta(matk_sequences, file.out =paste(path, "seqinr_matk.fasta", sep=""), names = sp_names)
+
+
+
+
+
+
+
+
+
+
+
+################ other method, where I authorize multiple sequences per species (intrasp variability tests ? )
+rbcl_list <- matK_list <- vector(mode='list', length=nrow(essai))
+count=1
+for (i in essai$AccSpeciesName){
+  # query for the rbcL gene
+  colker <- paste(i, "[Organism] AND rbcL[gene]", sep="")    
+  colker_search <- entrez_search(db="nuccore", term=colker, retmax=10) 
+  if (colker_search$retmax != 0){
+    rbcl_list[[count]] <- entrez_fetch(db="nuccore", id=colker_search$ids, rettype="fasta")
+  }else{rbcl_list[[count]] <- NA}
+  
+  
+  #query for the matK gene
+  colker2 <- paste(i, "[Organism] AND matK[gene]", sep="")    
+  colker_search2 <- entrez_search(db="nuccore", term=colker2, retmax=10)
+  if (colker_search2$retmax != 0){
+    matK_list[[count]] <- entrez_fetch(db="nuccore", id=colker_search2$ids, rettype="fasta")
+  }else{matK_list[[count]] <- NA}
+  # 
+  # if (colker_search$retmax == 0){
+  #   colker <- paste(i, "[Organism]", sep="")    
+  #   colker_search <- entrez_search(db="nuccore", term=colker, retmax=10)
+  # }
+  # 
+  # if (!is_empty(colker_search[[1]]) & !is_empty(colker_search2[[1]])){
+  #   seq_list[[count]]  <- entrez_fetch(db="nuccore", id=colker_search$ids, rettype="fasta")
+  #   count = count +1
+  #   seq_list[[count]]  <- entrez_fetch(db="nuccore", id=colker_search2$ids, rettype="fasta")
+  # }else{
+  #   seq_list[[count]] <- entrez_fetch(db="nuccore", id=colker_search$ids, rettype="fasta")
+  # }
+  count=count+1
+}
+
+
+write(rbcl_list%>% unlist, paste(path, "rbcl.fasta", sep=""), sep="\n") #gets sequence to a file
+write(matK_list%>% unlist, paste(path, "matK.fasta", sep=""), sep="\n") #gets sequence to a file
+
+
+
+
+
+# essai en séparant les gènes rbcL et matK
+
 
 seq_list <- empty_list <- vector(mode='list', length=nrow(essai))
 count=1
@@ -110,21 +186,13 @@ for (i in essai$AccSpeciesName){
   colker2 <- paste(i, "[Organism] AND matK[gene]", sep="")    
   colker_search2 <- entrez_search(db="nuccore", term=colker2, retmax=10)
   
-  if (colker_search$retmax == 0){
-    colker <- paste(i, "[Organism]", sep="")    
-    colker_search <- entrez_search(db="nuccore", term=colker, retmax=10)
-  }
+  # if (colker_search$retmax == 0){
+  #   colker <- paste(i, "[Organism]", sep="")    
+  #   colker_search <- entrez_search(db="nuccore", term=colker, retmax=10)
+  # }
   
   if (!is_empty(colker_search[[1]]) & !is_empty(colker_search2[[1]])){
     seq_list[[count]]  <- entrez_fetch(db="nuccore", id=colker_search$ids, rettype="fasta")
     count = count +1
-    seq_list[[count]]  <- entrez_fetch(db="nuccore", id=colker_search2$ids, rettype="fasta")
-  }else{
-    seq_list[[count]] <- entrez_fetch(db="nuccore", id=colker_search$ids, rettype="fasta")
   }
-  count=count+1
 }
-
-
-write(seq_list%>% unlist, paste(path, "seqs.fasta", sep=""), sep="\n") #gets sequence to a file
-
