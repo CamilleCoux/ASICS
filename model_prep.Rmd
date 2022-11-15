@@ -3,46 +3,57 @@ title: "Preparing HMSC model runs"
 output: html_notebook
 ---
 
-Let's apply the HMSC pipeline to CROZET.
+## Species occurrence data processing
 
+Starting from the raw data, I cleaned the data by selecting the native species 
+that were present on both Crozet and Kerguelen islands.
 
-```{r}
-library(tidyr)
-library(magrittr)
+As I explained in a previous document, the data are simple presence records that come from different sampling designs, such that the sites are not homogeneous in terms of surfaces. Since the target resolution of the JSDM predictions are to be 
+of approx 20 x 20m, I discarded all the occurrences of species from sites with surfaces larger than 400m2. The median surface
+size is 100m2, since a lot of sites are standardized at 10 x 10m. I kept all the sites with inferior surfaces, because 
+the risk of missing an observation decreases with plot size.
+
+Each site is considered to have been visited only once, but in reality some sites overlap a lot (spatially, but then there are
+different sampling years).
+
+These are all the observations since 2010. 
+
+```{r, error=FALSE, eval=TRUE,message=FALSE, warning=FALSE}
+library(tidyverse)
 library(Hmsc)
 
-# set directories
-localDir = "."
-dataDir = file.path(localDir, "../data")
-modelDir = file.path(localDir, "models")
-if(!dir.exists(modelDir)) dir.create(modelDir)
+theme_set(theme_bw())
 
+# this prepares the community matrices for Crozet and Kerguelen :
+source("process_occurrences.R")
+```
+```{r}
+# look at matrix fill : 
 
-# for reproducibility
-set.seed(1)
-
-# read in species data
-
-
+# CROZET 
+dim(cro_com_mat) # 2247 sites, 20 species.
+sum(cro_com_mat) # total number of observations
+colSums(cro_com_mat) # nb of sites where each plant appears. Cf Limosella australis : remove it.
+colSums(cro_com_mat) / nrow(cro_com_mat) *100  # proportion of sites where a plant is observed.
+rowSums(cro_com_mat) %>% hist(., main = "Crozet", xlab = "nb of species per site")
 
 ```
 
-
-
-
-
-
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
 
 ```{r}
-plot(cars)
+# KERGUELEN
+dim(ker_com_mat) # " 2646 sites, 20 species"
+sum(ker_com_mat) # total number of observations
+colSums(ker_com_mat) # nb of sites where each plant appears
+colSums(ker_com_mat) / nrow(ker_com_mat) *100 # proportion of sites where a plant is observed. 
+rowSums(ker_com_mat) %>% hist(., main = "Kerguelen", xlab = "nb of species per site")
+
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+Questions : 
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+- is there a threshold under which we consider a species to be too rare for the models to cope with ? 
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+- should we decide to remove a species, we should remove it in both islands, even if it's only rare in one of them ?
+
 
