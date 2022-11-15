@@ -66,6 +66,10 @@ for (i in cells){
 d$surf2 <- as.numeric(d$surf2)
 d$surf2 %>% summary
 
+d$placette %>% unique()
+d$placette <-NULL
+
+
 
 
 # Native plants that are present on both Cro and Ker : 
@@ -240,23 +244,46 @@ nats %>% filter(protocole == "Inventaire") %>%
   group_by(district) %>%
   select(surface) %>% unique %>% print(., n=150)
 
-d$surface %>% unique
-# 
-# nats2 <- nats
-# nats$surface <- d$surface[d$id %in% nats$id]
-# 
-# 
-# 
-# summary(foo)
-# 
-# hist(foo %>% as.numeric %>% log, breaks = 50)
-# # I want to calculate all the surfaces, so I need to have R evaluate the surface
-# # expressions as a calculus.
 
 
 
 
+#___ trying to order all obs by site, such that these sites have a similar surface
 
+nats$surf2%>% summary
+
+# so this means that if I remove all the obs that have NA surf2, only half of
+# the obs remain.
+# In theory, the numero_observation shoulld match the sites; let's see if there
+# are some NA surf2 cases I can complete. Need to check if each num_obs has only 1
+# surface associated to it.
+
+nats %>%
+  select(numero_observation, surf2) %>%
+  unique %>%
+  dim # 5098    2
+  
+
+
+foo <- nats %>%
+  select(numero_observation, surf2) %>%
+  unique %>%
+  group_by(numero_observation) %>%
+  count 
+
+nats %>%
+  filter(is.na(surf2)) %>%
+  select(numero_observation) %>% 
+  unique %>%
+  dim # 2834   1
+
+
+
+nats %>%
+  filter(is.na(surf2)) %>%
+  select(numero_observation, surf2) %>%
+  group_by(numero_observation) %>%
+  unique()
 
 ### KERGUELEN
 
