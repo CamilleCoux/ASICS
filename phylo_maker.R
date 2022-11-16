@@ -28,8 +28,8 @@ d[c("jour", "mois", "annee")] <- str_split_fixed(d$date_observation, "/", 3)
 # Native plants that are present on both Cro and Ker : 
 natives <- d %>% 
   filter(statut == "Native") %>%
-  count(district, taxon) %>%
-  count(taxon) %>%
+  dplyr::count(district, taxon) %>%
+  dplyr::count(taxon) %>%
   filter(n==2) %>%
   select(taxon) %>%
   unique %>%
@@ -45,7 +45,8 @@ essai <- try_sp %>%
 
 taxa <- essai$AccSpeciesName
 
-phylo_names <- phylomatic_names(taxa, format='isubmit', db="ncbi")
+phylo_names <- phylomatic_names(taxa, format='isubmit', db="ncbi") 
+2 # choose this option
 
 # doesn't work:
 # phylo_tree <- brranching::phylomatic(phylo_names, db="apg", storedtree="zanne2014", outformat="newick")

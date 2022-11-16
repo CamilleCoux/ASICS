@@ -68,7 +68,7 @@ essai$AccSpeciesName
 tr <- read.csv("../data/David_plantes_KerCro/22563.txt", sep="\t")
 
 
-# retrieve the genbank sequences for the remL gene, and the MEtK
+# retrieve the genbank sequences for the remL gene, and the MatK
 library(rentrez)
 
 path <- "../data/David_plantes_KerCro/"
@@ -103,7 +103,7 @@ seqs <- essai$AccSpeciesName %>%
   as.list %>%
   lapply(., ncbi_byname, gene="rbcL") 
   
-# I only need to kee the sequences and the species names
+# I only need to see the sequences and the species names
 sp_names <-  lapply(seqs, function(x){return(x$taxon)})
 rbcl_sequences <-  lapply(seqs, function(x){return(x$sequence)})
 
