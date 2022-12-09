@@ -32,6 +32,16 @@ d %<>%
 d[c("jour", "mois", "annee")] <- str_split_fixed(d$date_observation, "/", 3)
 
 
+natives <- d %>% 
+  filter(statut == "Native") %>%
+  dplyr::count(district, taxon) %>%
+  dplyr::count(taxon) %>%
+  filter(n==2) %>%
+  select(taxon) %>%
+  unique %>%
+  unlist %>%
+  unname 
+
 ### dealing with the surface column :
 
 # d$surface %>% unique %>% head(50)
@@ -74,10 +84,10 @@ d$surf2 <- as.numeric(d$surf2)
 # Native plants that are present on both Cro and Ker : 
 natives <- d %>% 
   filter(statut == "Native") %>%
-  count(district, taxon) %>%
-  count(taxon) %>%
-  filter(n==2) %>%
-  select(taxon) %>%
+  dplyr::count(district, taxon) %>%
+  dplyr::count(taxon) %>%
+  dplyr::filter(n==2) %>%
+  dplyr::select(taxon) %>%
   unique %>%
   unlist %>%
   unname
@@ -165,6 +175,33 @@ rm(d, nats, nats2, cells, natives, i)
 
 
 
+library(raster)
+library(stars)
+
+# create environmental variable table : sites x variables
+env_vars <- cro_nats %>%
+  dplyr::select(numero_observation, latitude, longitude, altitude, jour, mois, annee, date_observation) %>%
+  unique %>%
+  st_as_sf(coords = c("longitude", "latitude" ), crs=st_crs(T_down))
+
+
+# add downscaled temperature
+T_downscaled_cro <- raster("../data/chelsa/T_downscaled_Cro.tif")*0.1-273.15
+box1 <- c(51.6, 51.9, -46.5, -46.3)
+T_down <- raster::crop(T_downscaled_cro, box1)
+
+env_vars <- st_extract(st_as_stars(T_down), env_vars) %>% 
+  rename(mean_temp = layer) %>% 
+  st_join(env_vars) %>%
+  unique
+rownames(env_vars) <- 1:nrow(env_vars)
+
+# same with precipitation
+
+
+prec12 <- raster("../data/chelsa/CHELSA_bio12_1981-2010_V.2.1.tif")
+prec13 <- raster("../data/chelsa/CHELSA_bio13_1981-2010_V.2.1.tif")
+prec14 <- raster("../data/chelsa/CHELSA_bio14_1981-2010_V.2.1.tif")
 
 
 

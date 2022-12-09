@@ -6,11 +6,6 @@
 # Opt 1: let phylo.maker get the info from GenBank and create tree. Super fast,
 # but black box.
 
-# opt 2 : to test that tree, also possible to calculate it by extracting
-# sequences from GenBank, align, and calculate distances "manually"
-
-
-
 library(tidyverse)
 library(V.PhyloMaker)
 library(brranching)
@@ -59,10 +54,10 @@ result <- phylo.maker(sp_tab, scenarios=c("S1", "S2","S3"))
 s3tree <- result[[3]]
 plot(s3tree, cex = 0.6)
 
+class(s3tree)
 
 
-
-### OPTION 2 -------------------------------------------------------------------
+### OPTION 3 -------------------------------------------------------------------
 
 # Extract the nucleotide sequences from ncbi database, using species 
 # Accessibility Number (AccNum), which I have stored in a trait file from the 
@@ -113,7 +108,7 @@ seqinr::write.fasta(matk_sequences,
 
 # load the sequences from the file
 # change "DNA" to "RNA" or "AA" if necessary
-seqs <- readDNAStringSet("../data/David_plantes_KerCro/seqinr_rcbl.txt", format = "fasta")
+seqs <- readDNAStringSet("../data/David_plantes_KerCro/seqinr_matk.txt", format = "fasta")
 
 # look at some of the sequences (optional)
 seqs
@@ -130,7 +125,7 @@ BrowseSeqs(aligned, highlight=0)
 
 # write the alignment to a new FASTA file
 writeXStringSet(aligned,
-                file="../data/David_plantes_KerCro/seqinr_rbcl_aligned.fasta")
+                file="../data/David_plantes_KerCro/seqinr_matk_aligned.fasta.fasta")
 
 # read in the aligned data
 dna <- read.alignment("../data/David_plantes_KerCro/seqinr_rbcl_aligned.fasta", format = "fasta")
@@ -226,6 +221,11 @@ tre.new$tip.label <- aligned@ranges@NAMES
 msaplot(p=ggtree(tre.new), fasta="../data/David_plantes_KerCro/seqinr_rbcl_aligned.fasta", 
         window=c(150, 175))+
   scale_fill_viridis_d(alpha = 0.8)
+
+
+# opt 2 : to test that tree, also possible to calculate it by extracting
+# sequences from GenBank, align, and calculate distances "manually"
+
 
 
 
