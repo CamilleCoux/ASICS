@@ -36,8 +36,8 @@ natives <- d %>%
   filter(statut == "Native") %>%
   dplyr::count(district, taxon) %>%
   dplyr::count(taxon) %>%
-  filter(n==2) %>%
-  select(taxon) %>%
+  dplyr::filter(n==2) %>%
+  dplyr::select(taxon) %>%
   unique %>%
   unlist %>%
   unname 
@@ -83,7 +83,7 @@ d$surf2 <- as.numeric(d$surf2)
 
 # Native plants that are present on both Cro and Ker : 
 natives <- d %>% 
-  filter(statut == "Native") %>%
+  dplyr::filter(statut == "Native") %>%
   dplyr::count(district, taxon) %>%
   dplyr::count(taxon) %>%
   dplyr::filter(n==2) %>%
@@ -92,14 +92,16 @@ natives <- d %>%
   unlist %>%
   unname
 
-# subset dataset to keep just those species :
+# subset dataset to keep just those species and the env variables I'll need in the model :
 nats <- d %>%
-  filter(taxon %in% natives)
+  dplyr::filter(taxon %in% natives) %>%
+  dplyr::select(id,district, numero_observation,taxon, statut, pente, exposition, 
+  latitude,longitude,Observateur,date_observation, jour,mois,annee,surf2)
 
 # remove the surfaces that are too large to be trusted : 
 # nats$surf2 %>% summary
 foo <- nats %>%
-  select(numero_observation, surf2) %>%
+  dplyr::select(numero_observation, surf2) %>%
   unique 
 
 # foo$surf2 %>% sort(decreasing = T) %>% hist
@@ -113,6 +115,14 @@ rm(foo)
 nats2 <- nats %>% filter(surf2 <= 400) # 
 nats2 <- rbind(nats2, nats %>% filter(is.na(surf2)))
 nats2 <- nats2[order(nats2$id),]
+nats2$surf2 <- NULL
+
+
+# remove NAs for the rows I'll use later in the model. Don't forget to put them
+# back in if I end up not using the variables in the end....
+nats2 <- na.omit(nats2)
+
+
 
 
 # separate CRO and KER :
@@ -124,7 +134,7 @@ ker_nats <- nats2 %>% filter(district == "Kerguelen")
 
 cro_com_mat <- cro_nats %>% 
   mutate(count = 1) %>%
-  select(taxon, numero_observation, count) %>% 
+  dplyr::select(taxon, numero_observation, count) %>% 
   pivot_wider(names_from = taxon, values_from = count, values_fn = sum,  values_fill = 0) %>%
   as.data.frame
 
@@ -141,7 +151,7 @@ cro_com_mat$numero_observation <- NULL
 # KERGUELEN
 ker_com_mat <- ker_nats %>% 
   mutate(count = 1) %>%
-  select(taxon, numero_observation, count) %>% 
+  dplyr::select(taxon, numero_observation, count) %>% 
   pivot_wider(names_from = taxon, values_from = count, values_fn = sum,  values_fill = 0) %>%
   as.data.frame
 
@@ -160,11 +170,11 @@ ker_com_mat$numero_observation <- NULL
 
 # keep track of the XY locations of each site : 
 cro_sites_xy <- cro_nats %>%
-  select(numero_observation, latitude, longitude) %>%
+  dplyr::select(numero_observation, latitude, longitude) %>%
   unique
 
 ker_sites_xy <- ker_nats %>%
-  select(numero_observation, latitude, longitude) %>%
+  dplyr::select(numero_observation, latitude, longitude) %>%
   unique
 
 
@@ -178,30 +188,80 @@ rm(d, nats, nats2, cells, natives, i)
 library(raster)
 library(stars)
 
+# add downscaled temperature
+# bio1 CHELSA layer = mean annual daily mean air temperatures averaged over 1 year
+# bio5 CHELSA layer = highest temperature of any monthly daily mean maximum temperature
+# bio6 CHELSA layer = lowest temperature of an ymonthly daily mean maximum temperature
+
+bio1_cro <- raster("../data/chelsa/bio1_downscaled_Cro.tif")*0.1-273.15
+bio5_cro <- raster("../data/chelsa/bio5_downscaled_cro.tif")*0.1-273.15
+bio6_cro <- raster("../data/chelsa/bio6_downscaled_cro.tif")*0.1-273.15
+box1 <- c(51.6, 51.9, -46.5, -46.3)
+bio1_cro <- raster::crop(bio1_cro, box1)
+bio5_cro <- raster::crop(bio5_cro, box1)
+bio6_cro <- raster::crop(bio6_cro, box1)
+
 # create environmental variable table : sites x variables
 env_vars <- cro_nats %>%
-  dplyr::select(numero_observation, latitude, longitude, altitude, jour, mois, annee, date_observation) %>%
+  dplyr::select(numero_observation, latitude, longitude, jour, mois, annee, date_observation, pente, exposition) %>%
   unique %>%
-  st_as_sf(coords = c("longitude", "latitude" ), crs=st_crs(T_down))
+  st_as_sf(coords = c("longitude", "latitude" ), crs=st_crs(bio1_cro))
 
 
-# add downscaled temperature
-T_downscaled_cro <- raster("../data/chelsa/T_downscaled_Cro.tif")*0.1-273.15
-box1 <- c(51.6, 51.9, -46.5, -46.3)
-T_down <- raster::crop(T_downscaled_cro, box1)
-
-env_vars <- st_extract(st_as_stars(T_down), env_vars) %>% 
+env_vars <- st_extract(st_as_stars(bio1_cro), env_vars) %>% 
   rename(mean_temp = layer) %>% 
   st_join(env_vars) %>%
   unique
 rownames(env_vars) <- 1:nrow(env_vars)
 
-# same with precipitation
+env_vars <- st_extract(st_as_stars(bio5_cro), env_vars) %>% 
+  rename(max_temp = layer) %>% 
+  st_join(env_vars) %>%
+  unique
+rownames(env_vars) <- 1:nrow(env_vars)
+
+env_vars <- st_extract(st_as_stars(bio6_cro), env_vars) %>% 
+  rename(min_temp = layer) %>% 
+  st_join(env_vars) %>%
+  unique
+rownames(env_vars) <- 1:nrow(env_vars)
 
 
-prec12 <- raster("../data/chelsa/CHELSA_bio12_1981-2010_V.2.1.tif")
-prec13 <- raster("../data/chelsa/CHELSA_bio13_1981-2010_V.2.1.tif")
-prec14 <- raster("../data/chelsa/CHELSA_bio14_1981-2010_V.2.1.tif")
+
+# same with precipitation (scale 0.1, )
+# bio12 CHELSA layer = Accumulated precipitation amount over 1 year
+# bio13 CHELSA layer = The precipitation of the wettest month.
+# bio14 CHELSA layer = The precipitation of the driest month
+
+prec12_cro <- raster("../data/chelsa/CHELSA_bio12_1981-2010_V.2.1.tif")
+prec13_cro <- raster("../data/chelsa/CHELSA_bio13_1981-2010_V.2.1.tif")
+prec14_cro <- raster("../data/chelsa/CHELSA_bio14_1981-2010_V.2.1.tif")
+
+prec12_cro <- raster::crop(prec12_cro, box1)*0.1
+prec13_cro <- raster::crop(prec13_cro, box1)*0.1
+prec14_cro <- raster::crop(prec14_cro, box1)*0.1
+
+
+env_vars <- st_extract(st_as_stars(prec12_cro), env_vars) %>% 
+  rename(accum_prec = CHELSA_bio12_1981.2010_V.2.1) %>% 
+  st_join(env_vars) %>%
+  unique
+rownames(env_vars) <- 1:nrow(env_vars)
+
+env_vars <- st_extract(st_as_stars(prec13_cro), env_vars) %>% 
+  rename(wet_month_prec = CHELSA_bio13_1981.2010_V.2.1) %>% 
+  st_join(env_vars) %>%
+  unique
+rownames(env_vars) <- 1:nrow(env_vars)
+
+env_vars <- st_extract(st_as_stars(prec14_cro), env_vars) %>% 
+  rename(dry_month_prec = CHELSA_bio14_1981.2010_V.2.1) %>% 
+  st_join(env_vars) %>%
+  unique
+rownames(env_vars) <- 1:nrow(env_vars)
+
+
+
 
 
 

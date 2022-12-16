@@ -67,6 +67,41 @@ essai$AccSpeciesName
 
 tr <- read.csv("../data/David_plantes_KerCro/22563.txt", sep="\t")
 
+tr$TraitName %>% unique
+# only 6 species in the Try database that have entries for those traits
+(tr$AccSpeciesName %>% unique) %in% natives
+
+# new strategy : find out for which traits we have the most entries for our native species list:
+
+try_sp <-  read.csv("../data/TryAccSpecies.txt", sep="\t")
+tr_list <- read.csv("../data/try_traits_list.txt", sep="\t")
+
+tr_list <- tr_list[rev(order(tr_list$AccSpecNum)),c("TraitID","Trait", "AccSpecNum")]
+
+tr_sel <- c("Plant growth form", "Leaf photosynthesis pathway", "Plant height vegetative", 
+            "Species tolerance to frost", "Seed dry mass"," Plant lifespan (longevity)",
+            "Plant nitrogen(N) fixation capacity", "Seed germination rate (germination efficiency)",
+            "Leaf area per leaf dry mass (specific leaf area, SLA or 1/LMA): undefined if petiole is in- or exclu",
+            "Leaf nitrogen (N) content per leaf dry mass", "Leaf phosphorus (P) content per leaf dry mass",
+            "Leaf dry mass (single leaf)", "Leaf thickness", "Plant growth rate")
+tr_list$TraitID[tr_list$Trait %in% tr_sel]
+
+tr_sp_sel <- try_sp %>% dplyr::filter(AccSpeciesName %in% natives) %>%
+  dplyr::select(AccSpeciesID) %>% as.vector()
+
+tr_sel <- read.csv("../data/Try_traits_selection.txt", sep="\t")
+tr_sel %<>%  dplyr::filter(AccSpeciesName %in% natives)
+rownames(tr_sel) <- tr_sel$AccSpeciesName
+tr_sel$X <- NULL
+tr_sel$AccSpeciesName <- NULL
+colnames(tr_sel) <- gsub("^\\.|\\.$", "", colnames(tr_sel))
+colnames(tr_sel) <- gsub("Leaf.area.*", "SLA", colnames(tr_sel))
+
+tr_sel[tr_sel>0] <- 1
+tr_sel %>% rowSums
+tr_sel %>% colSums
+
+tr_sel %>% dplyr::select(Plant.growth.form,  Plant.height.vegetative, SLA  )
 
 # retrieve the genbank sequences for the remL gene, and the MatK
 library(rentrez)

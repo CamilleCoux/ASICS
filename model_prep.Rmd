@@ -57,3 +57,13 @@ Questions :
 - should we decide to remove a species, we should remove it in both islands, even if it's only rare in one of them ?
 
 
+
+## Traits
+
+I tried to get some trait data from the TRY database, but I ran into a series of problems, and in the end I don't think we'll be able to incorporate traits in this way. The probelm is the TRY database only allows to download 20 traits at a time for a given species, so you have to know which traits you want. I tried to download the traits that have been measured the most over the whole database and were meaningful for the list of native plants, but in our case, they don't overlap very much. This means we would have to drop species out of the analysis. I'd rather try and compensate for this with the phylogeny data, rather than put too much weight on traits that aren't even necessarily that relevant to the question we want to ask.
+
+
+
+
+
+

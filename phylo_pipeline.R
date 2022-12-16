@@ -26,8 +26,8 @@ natives <- d %>%
   filter(statut == "Native") %>%
   dplyr::count(district, taxon) %>%
   dplyr::count(taxon) %>%
-  filter(n==2) %>%
-  select(taxon) %>%
+  dplyr::filter(n==2) %>%
+  dplyr:: select(taxon) %>%
   unique %>%
   unlist %>%
   unname %>% 
