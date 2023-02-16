@@ -1,0 +1,52 @@
+---
+title: "HMSC 1st model runs"
+output: 
+word_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r, error=FALSE, eval=TRUE,message=FALSE, warning=FALSE}
+
+library(Hmsc)
+library(ape) 
+library(viridis)
+source("process_occurrences.R")
+
+Y = as.matrix(cro_com_mat)
+
+
+# READ AND MODIFY ENVIRONMENTAL DATA (BEGINNING)
+XData = env_vars %>% 
+  st_drop_geometry %>%
+  dplyr::select(accum_prec, mean_temp, numero_observation, 
+                jour,mois,annee,date_observation,pente,exposition)
+```
+
+```{r, echo=F}
+
+# remove Nas from XData
+XData <- na.omit(XData)
+
+
+str(XData)
+XData$numero_observation %<>% as.factor
+XData$jour %<>% as.integer
+XData$mois %<>% as.integer
+
+XData$annee %<>% as.integer
+XData$pente %<>% as.factor
+XData$exposition %<>% as.factor
+XData$date_observation <- NULL
+
+XData$id <- 1:nrow(XData) %>% as.factor
+
+
+
+# With transparency (right)
+ggplot(data=XData, aes(x=accum_prec, group=exposition, fill=exposition)) +
+  geom_density(adjust=1.5, alpha=.4) +
+  scale_fill_viridis(discrete=T) +
+  scale_color_viridis(discrete=T) 
+#p2
+```

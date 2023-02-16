@@ -57,6 +57,8 @@ plot(s3tree, cex = 0.6)
 class(s3tree)
 
 
+save(result, file="C:/Users/coux/Documents/ASICS/data/traits_trees/phylomaker_tree.RData")
+
 ### OPTION 3 -------------------------------------------------------------------
 
 # Extract the nucleotide sequences from ncbi database, using species 

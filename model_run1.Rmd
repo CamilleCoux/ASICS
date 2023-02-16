@@ -1,0 +1,163 @@
+---
+title: "Crozet preliminary model runs"
+output:
+  word_document: default
+  html_notebook: default
+---
+
+## Build model
+
+```{r, error=FALSE, eval=TRUE,message=FALSE, warning=FALSE, echo=F}
+
+library(Hmsc)
+library(ape) 
+library(viridis)
+crozet=TRUE
+source("process_occurrences.R")
+```
+
+
+
+### Occurrences and environmental variables
+```{r}
+Y = as.matrix(cro_com_mat)
+
+
+# SELECT COMMON SPECIES
+prev = colSums(Y)
+#  Limosella australis occurs only 2 times in the whole Crozet dataset ==> remove it. 
+# means I need to remove it from th phylo tree too, and the XData sites ?
+hist(prev)
+sum(prev>=20)
+sel.sp = (prev>=20)
+Y = Y[,sel.sp] #presence-absence data for selected species
+
+
+
+# READ AND MODIFY ENVIRONMENTAL DATA 
+XData <- env_vars %>% 
+  st_drop_geometry %>%
+  dplyr::select(accum_prec, mean_temp, numero_observation, 
+                jour,mois,annee,date_observation,pente,exposition)
+```
+
+```{r, echo=F, eval=TRUE}
+
+# remove Nas from XData
+XData <- na.omit(XData)
+
+
+XData$numero_observation %<>% as.factor
+XData$jour %<>% as.integer
+XData$mois %<>% as.integer
+
+XData$annee %<>% as.integer
+XData$pente %<>% as.factor
+XData$exposition %<>% as.factor
+XData$date_observation <- NULL
+
+XData$id <- 1:nrow(XData) %>% as.factor
+
+XData %>% str
+
+```
+
+
+
+### Phylogeny
+
+```{r}
+# READ AND MODIFY PHYLO DATA 
+################################################################################
+
+# script to build tree is in ASICS/ASICS_code/phylo_pipeline.R
+
+phylotree <- read.tree("../data/traits_trees/phylomaker_tree")
+phylotree$tip.label <- gsub("_", " ", phylotree$tip.label)
+
+# need to remove Limosella australis for Crozet
+phylo_cro <- drop.tip(phylotree, tip = "Limosella australis")
+
+```
+
+
+
+## Define model
+
+```{r}
+# STUDY DESIGN
+studyDesign = data.frame(site=XData$numero_observation, id=XData$id)
+
+# RANDOM EFFECT STRUCTURE, HERE Site (hierarchical study design)
+rL.site = HmscRandomLevel(units = levels(studyDesign$site))
+
+# and optionally id, if we are interested in species associations at that level
+rL.id = HmscRandomLevel(units = levels(studyDesign$id))
+
+# REGRESSION MODEL FOR ENVIRONMENTAL COVARIATES.
+XFormula = ~ mean_temp + accum_prec + pente + exposition
+
+# REGRESSION MODEL FOR TRAITS 
+# I didn't include them
+
+
+# CONSTRUCT THE MODELS.
+
+# PRESENCE-ABSENCE MODEL FOR INDIVIDUAL SPECIES (COMMON ONLY)
+m = Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
+         # TrData = TrData, TrFormula = TrFormula,
+         phyloTree = phylo_cro,
+         distr="probit",
+         studyDesign = studyDesign, ranLevels=list(site=rL.site, id=rL.id))
+```
+
+
+
+## Fit model with MCMC
+
+In the beginning it's good to test for different thinning and samples.
+
+As for the number of chains, I stuck with 4, which I think should also correspond to the number of cores used. Not sure why, but that's the default.
+
+```{r}
+
+# SETTING COMMONLY ADJUSTED PARAMETERS TO DEFAULT
+
+nParallel = NULL #Default: nParallel = nChains
+
+nm = length(models)
+samples_list = c(5,250,250,250,250)#,250)
+thin_list = c(1,1,10,100,1000)#,10000)
+nChains = 4
+nst = length(thin_list)
+
+# And then a batch of models are fitted using the different combos of parameters, but they follow this structure:
+
+m = sampleMcmc(m, samples = samples, thin=thin,
+               adaptNf=rep(ceiling(0.4*samples*thin),m$nr), 
+               transient = ceiling(0.5*samples*thin),
+               nChains = nChains,
+               nParallel = nParallel) 
+```
+
+```{r}
+preds = computePredictedValues(m)
+      VP = computeVariancePartitioning(m)
+      vals = VP$vals
+      mycols = rainbow(nrow(VP$vals))
+      MF = evaluateModelFit(hM=m, predY=preds)
+      R2 = NULL
+      if(!is.null(MF$TjurR2)){
+        TjurR2 = MF$TjurR2
+        vals = rbind(vals,TjurR2)
+        R2=TjurR2
+      }
+      if(!is.null(MF$R2)){
+        R2=MF$R2
+        vals = rbind(vals,R2)
+      }
+      if(!is.null(MF$SR2)){
+        R2=MF$SR2
+        vals = rbind(vals,R2)
+```
+

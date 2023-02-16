@@ -161,13 +161,14 @@ ker_com_mat$numero_observation <- NULL
 
 # colSums(ker_com_mat) # 
 # colSums(ker_com_mat) / nrow(ker_com_mat) *100 # proportion of sites where a plant is observed. 
+
 # # should there be a lower limit for this ? or is it enough if the model has 
-# # more than a certain amount of obseervations to deal with ?
+# # more than a certain amount of observations to deal with ?
 # rowSums(ker_com_mat) %>% hist()
 
 
 
-
+  g <- ggplot(mpg, aes(class)) + geom_bar()
 # keep track of the XY locations of each site : 
 cro_sites_xy <- cro_nats %>%
   dplyr::select(numero_observation, latitude, longitude) %>%
@@ -180,7 +181,7 @@ ker_sites_xy <- ker_nats %>%
 
 
 # clean workspace
-rm(d, nats, nats2, cells, natives, i)
+rm(d, nats, nats2, cells, i)
 
 
 
@@ -192,6 +193,9 @@ library(stars)
 # bio1 CHELSA layer = mean annual daily mean air temperatures averaged over 1 year
 # bio5 CHELSA layer = highest temperature of any monthly daily mean maximum temperature
 # bio6 CHELSA layer = lowest temperature of an ymonthly daily mean maximum temperature
+
+if(crozet){
+  
 
 bio1_cro <- raster("../data/chelsa/bio1_downscaled_Cro.tif")*0.1-273.15
 bio5_cro <- raster("../data/chelsa/bio5_downscaled_cro.tif")*0.1-273.15
@@ -243,22 +247,103 @@ prec14_cro <- raster::crop(prec14_cro, box1)*0.1
 
 
 env_vars <- st_extract(st_as_stars(prec12_cro), env_vars) %>% 
-  rename(accum_prec = CHELSA_bio12_1981.2010_V.2.1) %>% 
+  dplyr::rename(accum_prec = CHELSA_bio12_1981.2010_V.2.1) %>% 
   st_join(env_vars) %>%
   unique
 rownames(env_vars) <- 1:nrow(env_vars)
 
 env_vars <- st_extract(st_as_stars(prec13_cro), env_vars) %>% 
-  rename(wet_month_prec = CHELSA_bio13_1981.2010_V.2.1) %>% 
+  dplyr::rename(wet_month_prec = CHELSA_bio13_1981.2010_V.2.1) %>% 
   st_join(env_vars) %>%
   unique
 rownames(env_vars) <- 1:nrow(env_vars)
 
 env_vars <- st_extract(st_as_stars(prec14_cro), env_vars) %>% 
-  rename(dry_month_prec = CHELSA_bio14_1981.2010_V.2.1) %>% 
+  dplyr::rename(dry_month_prec = CHELSA_bio14_1981.2010_V.2.1) %>% 
   st_join(env_vars) %>%
   unique
 rownames(env_vars) <- 1:nrow(env_vars)
+
+}
+
+
+
+
+if(!crozet){
+  
+  
+  bio1_ker <- raster("../data/chelsa/bio1_downscaled_ker.tif")*0.1-273.15
+  bio5_ker <- raster("../data/chelsa/bio5_downscaled_ker.tif")*0.1-273.15
+  bio6_ker <- raster("../data/chelsa/bio6_downscaled_ker.tif")*0.1-273.15
+  box1 <- c(68, 71,-50, -48)
+  bio1_ker <- raster::crop(bio1_ker, box1)
+  bio5_ker <- raster::crop(bio5_ker, box1)
+  bio6_ker <- raster::crop(bio6_ker, box1)
+  
+  # create environmental variable table : sites x variables
+  env_vars <- ker_nats %>%
+    dplyr::select(numero_observation, latitude, longitude, jour, mois, annee, date_observation, pente, exposition) %>%
+    unique %>%
+    st_as_sf(coords = c("longitude", "latitude" ), crs=st_crs(bio1_ker))
+  
+  
+  env_vars <- st_extract(st_as_stars(bio1_ker), env_vars) %>% 
+    rename(mean_temp = layer) %>% 
+    st_join(env_vars) %>%
+    unique
+  rownames(env_vars) <- 1:nrow(env_vars)
+  
+  env_vars <- st_extract(st_as_stars(bio5_ker), env_vars) %>% 
+    rename(max_temp = layer) %>% 
+    st_join(env_vars) %>%
+    unique
+  rownames(env_vars) <- 1:nrow(env_vars)
+  
+  env_vars <- st_extract(st_as_stars(bio6_ker), env_vars) %>% 
+    rename(min_temp = layer) %>% 
+    st_join(env_vars) %>%
+    unique
+  rownames(env_vars) <- 1:nrow(env_vars)
+  
+  
+  
+  # same with precipitation (scale 0.1, )
+  # bio12 CHELSA layer = Accumulated precipitation amount over 1 year
+  # bio13 CHELSA layer = The precipitation of the wettest month.
+  # bio14 CHELSA layer = The precipitation of the driest month
+  
+  prec12_ker <- raster("../data/chelsa/CHELSA_bio12_1981-2010_V.2.1.tif")
+  prec13_ker <- raster("../data/chelsa/CHELSA_bio13_1981-2010_V.2.1.tif")
+  prec14_ker <- raster("../data/chelsa/CHELSA_bio14_1981-2010_V.2.1.tif")
+  
+  prec12_ker <- raster::crop(prec12_ker, box1)*0.1
+  prec13_ker <- raster::crop(prec13_ker, box1)*0.1
+  prec14_ker <- raster::crop(prec14_ker, box1)*0.1
+  
+  
+  env_vars <- st_extract(st_as_stars(prec12_ker), env_vars) %>% 
+    dplyr::rename(accum_prec = CHELSA_bio12_1981.2010_V.2.1) %>% 
+    st_join(env_vars) %>%
+    unique
+  rownames(env_vars) <- 1:nrow(env_vars)
+  
+  env_vars <- st_extract(st_as_stars(prec13_ker), env_vars) %>% 
+    dplyr::rename(wet_month_prec = CHELSA_bio13_1981.2010_V.2.1) %>% 
+    st_join(env_vars) %>%
+    unique
+  rownames(env_vars) <- 1:nrow(env_vars)
+  
+  env_vars <- st_extract(st_as_stars(prec14_ker), env_vars) %>% 
+    dplyr::rename(dry_month_prec = CHELSA_bio14_1981.2010_V.2.1) %>% 
+    st_join(env_vars) %>%
+    unique
+  rownames(env_vars) <- 1:nrow(env_vars)
+  
+}
+
+
+
+
 
 
 

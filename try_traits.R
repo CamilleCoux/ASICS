@@ -48,6 +48,9 @@ natives <- d %>%
 
 try_sp <- read.csv("../data/TryAccSpecies.txt", sep="\t")
 head(try_sp)
+essai$AccSpeciesID
+essai$AccSpeciesName
+
 
 essai <- try_sp %>%
   filter(AccSpeciesName %in% natives)
@@ -60,9 +63,6 @@ Notogrammitis <- try_sp[grep("Notogrammitis", try_sp$AccSpeciesName),] # 0, just
 # so there's not much to do, except exclude these species from the analysis 
 
 # get the AccNum:
-essai$AccSpeciesID
-essai$AccSpeciesName
-
 # read in the trait data downloaded from TRY webversion : 
 
 tr <- read.csv("../data/David_plantes_KerCro/22563.txt", sep="\t")

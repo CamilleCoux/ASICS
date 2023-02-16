@@ -1,0 +1,96 @@
+This file contains additional information regarding parameter estimates. 
+ 
+ 
+C:/Users/coux/Documents/ASICS/ASICS_code/models/S2_fit_models_thin_1000_samples_250_chains_4.Rdata
+
+
+presence-absence model
+
+
+var.part.order.explained
+
+Pringlea antiscorbutica
+Acaena magellanica
+Agrostis magellanica
+Azorella selago
+Lycopodium magellanicum
+Uncinia compacta
+Galium antarcticum
+Phlegmariurus saururus
+Ranunculus biternatus
+Austroblechnum penna-marina
+Juncus scheuchzerioides
+Crassula moschata
+Leptinella plumosa
+Poa cookii
+Montia fontana
+Callitriche antarctica
+Notogrammitis crassior
+Deschampsia antarctica
+Colobanthus kerguelensis
+
+var.part.order.raw
+
+Juncus scheuchzerioides
+Austroblechnum penna-marina
+Azorella selago
+Uncinia compacta
+Montia fontana
+Acaena magellanica
+Leptinella plumosa
+Lycopodium magellanicum
+Agrostis magellanica
+Crassula moschata
+Poa cookii
+Pringlea antiscorbutica
+Colobanthus kerguelensis
+Galium antarcticum
+Ranunculus biternatus
+Phlegmariurus saururus
+Callitriche antarctica
+Deschampsia antarctica
+Notogrammitis crassior
+
+omega.order
+
+Pringlea antiscorbutica
+Galium antarcticum
+Notogrammitis crassior
+Acaena magellanica
+Austroblechnum penna-marina
+Lycopodium magellanicum
+Ranunculus biternatus
+Uncinia compacta
+Agrostis magellanica
+Phlegmariurus saururus
+Juncus scheuchzerioides
+Callitriche antarctica
+Montia fontana
+Colobanthus kerguelensis
+Azorella selago
+Crassula moschata
+Leptinella plumosa
+Poa cookii
+Deschampsia antarctica
+
+omega.order
+
+Colobanthus kerguelensis
+Juncus scheuchzerioides
+Pringlea antiscorbutica
+Montia fontana
+Callitriche antarctica
+Poa cookii
+Crassula moschata
+Leptinella plumosa
+Lycopodium magellanicum
+Phlegmariurus saururus
+Azorella selago
+Uncinia compacta
+Agrostis magellanica
+Austroblechnum penna-marina
+Notogrammitis crassior
+Galium antarcticum
+Deschampsia antarctica
+Acaena magellanica
+Ranunculus biternatus

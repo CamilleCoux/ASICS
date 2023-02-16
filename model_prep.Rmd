@@ -1,37 +1,42 @@
 ---
 title: "Preparing HMSC model runs"
-output: html_notebook
+output:
+  word_document: default
+  html_document:
+    df_print: paged
 ---
 
 ## Species occurrence data processing
 
-Starting from the raw data, I cleaned the data by selecting the native species 
-that were present on both Crozet and Kerguelen islands.
+Starting from the raw data, I cleaned the data by selecting the native species that were present on both Crozet and Kerguelen islands.
 
-As I explained in a previous document, the data are simple presence records that come from different sampling designs, such that the sites are not homogeneous in terms of surfaces. Since the target resolution of the JSDM predictions are to be 
-of approx 20 x 20m, I discarded all the occurrences of species from sites with surfaces larger than 400m2. The median surface
-size is 100m2, since a lot of sites are standardized at 10 x 10m. I kept all the sites with inferior surfaces, because 
-the risk of missing an observation decreases with plot size.
+As I explained in a previous document, the data are simple presence records that come from different sampling designs, such that the sites are not homogeneous in terms of surfaces. Since the target resolution of the JSDM predictions are to be of approx 20 x 20m, I discarded all the occurrences of species from sites with surfaces larger than 400m2. The median surface size is 100m2, since a lot of sites are standardized at 10 x 10m. I kept all the sites with inferior surfaces, because the risk of missing an observation decreases with plot size.
 
-Each site is considered to have been visited only once, but in reality some sites overlap a lot (spatially, but then there are
-different sampling years).
+Each site is considered to have been visited only once, but in reality some sites overlap a lot (spatially, but then there are different sampling years).
 
-These are all the observations since 2010. 
+These are all the observations since 2010.
 
 ```{r, error=FALSE, eval=TRUE,message=FALSE, warning=FALSE}
 library(tidyverse)
 library(Hmsc)
+library(V.PhyloMaker)
+library(brranching)
+library(raster)
+library(stars)
 
 theme_set(theme_bw())
 
-# this prepares the community matrices for Crozet and Kerguelen :
+# this prepares the community matrices for Crozet and Kerguelen, but for now 
+# let's look at Crozet
+crozet = TRUE
 source("process_occurrences.R")
 ```
-```{r}
+
+```{r, echo=TRUE}
 # look at matrix fill : 
 
 # CROZET 
-dim(cro_com_mat) # 2247 sites, 20 species.
+dim(cro_com_mat) # sites x species
 sum(cro_com_mat) # total number of observations
 colSums(cro_com_mat) # nb of sites where each plant appears. Cf Limosella australis : remove it.
 colSums(cro_com_mat) / nrow(cro_com_mat) *100  # proportion of sites where a plant is observed.
@@ -39,8 +44,7 @@ rowSums(cro_com_mat) %>% hist(., main = "Crozet", xlab = "nb of species per site
 
 ```
 
-
-```{r}
+```{r echo=TRUE}
 # KERGUELEN
 dim(ker_com_mat) # " 2646 sites, 20 species"
 sum(ker_com_mat) # total number of observations
@@ -50,20 +54,188 @@ rowSums(ker_com_mat) %>% hist(., main = "Kerguelen", xlab = "nb of species per s
 
 ```
 
-Questions : 
+Questions :
 
-- is there a threshold under which we consider a species to be too rare for the models to cope with ? 
+-   at which threshold we consider a species to be too rare for the models to cope with ?
 
-- should we decide to remove a species, we should remove it in both islands, even if it's only rare in one of them ?
+In HMSC school, they suggested 10 to 20 was a good minimum, so I'll go for that.
 
+-   should we decide to remove a species, we should remove it in both islands, even if it's only rare in one of them ?
 
+So far, I haven't.
 
 ## Traits
 
-I tried to get some trait data from the TRY database, but I ran into a series of problems, and in the end I don't think we'll be able to incorporate traits in this way. The probelm is the TRY database only allows to download 20 traits at a time for a given species, so you have to know which traits you want. I tried to download the traits that have been measured the most over the whole database and were meaningful for the list of native plants, but in our case, they don't overlap very much. This means we would have to drop species out of the analysis. I'd rather try and compensate for this with the phylogeny data, rather than put too much weight on traits that aren't even necessarily that relevant to the question we want to ask.
+I tried to get some trait data from the TRY database, but I ran into a series of problems, and in the end I don't think we'll be able to incorporate traits in this way. The problem is the TRY database only allows to download 20 traits at a time for a given species, so you have to know which traits you want. I tried to download the traits that have been measured the most over the whole database and were meaningful for the list of native plants, but in our case, they don't overlap very much. This means we would have to drop species out of the analysis. I'd rather try and compensate for this with the phylogeny data, rather than put too much weight on traits that aren't even necessarily that relevant to the question we want to ask.
+
+In any case, if we really need to incorporate traits, I'm going to need some help and talk with specialists from either TRY or ASICS plant traits, I can't solve this alone...
+
+## Phylogenies
+
+The discussion I had with Claudine Montgelard a few moths ago was useful to help me understand some of the issues, but in the end the tools she suggested turned out to be unpractical : mostly online services, with options to tick based on her recommendations (and would have been tough for me to defend in a publication). Plus I did try and submit a request, but it never came back to me.
+
+I have scripts to extract gene/protein sequences and build trees with those, but this requires to take many decisions I don't really trust myself to do. This was what I went to see Claudine for in the 1st place, but she didn't provide any straightforward answers to them.
+
+In the end, I chose a method which seems to be the easiest way to do things, but it's not ideal : I accessed a huge Tree of Life reference phylogeny for plants (Qian, H. & Jin, Y. (2016) Journal of Plant Ecology), it's supposed to be the most up-to-date one there is. Then I simply pruned it to keep only the species I'm interested in. Claudine Montgelard said it should be OK...
+
+Long story short : I have a tree, it's probably somewhat rough but Hopefully it'll do the job for exploratory model runs.
+
+This is what it looks like :
+
+```{r, echo=F, eval = F}
+# extract species, genus and family 
+
+phylo_names <- phylomatic_names(natives %>% as.character, 
+                                format='isubmit', db="ncbi") 
+2 # choose this option
 
 
+### OPTION 1 : make tree using phylo.maker -------------------------------------
+
+# need to arrange the phylo names into dataframe with columns in right order:
+
+sp_tab <- str_split_fixed(phylo_names, "/", 3) %>% data.frame 
+colnames(sp_tab) = c("family", "genus", "species")
+sp_tab <- sp_tab[, c(3, 2, 1)]
+
+# selected all scenarios to compare, but turns out they're equivalent
+result <- phylo.maker(sp_tab, scenarios=c("S1", "S2","S3"))
+s3tree <- result[[3]]
+```
+
+```{r, echo=T}
+load("../data/traits_trees/phylomaker_tree.RData")
+plot(result[[3]], cex = 0.6)
+```
+
+However, if you look at the "status" column in the following table, you'll notice that 7/20 have a "prune" status, which means those plants found a match in the mega tree. The remaining 13 ones have "bind". This means that a binding to the tree was possible, but it's not a match. It's probably not to be trusted.
+
+```{r, echo=T}
+result$species.list
+```
+
+My conclusion is that if we want to use a phylogeny, we'll need to go back to the good old sequence comparison method.
+
+## Temperature layers and downscaling
+
+We used Jonas' downscaling method from the lapse rates. He sent me the lapse rate data used by CHELSA, ie monthly data spanning years 1979 to 2020. From this data, I calculated an annual mean.
+
+This is one question I have: wouldn't it be better to average only over the months we're interested in ?
+
+I'll share what we did, because even though the output looks legit, I'd like your opinion on what we did.
+
+For now let's stick with Cro.
+
+This is Jonas' temperature downscaling equation :
+
+T = d-b\*(a-c), where:
+
+-   a = the digital elevation model at the target resolution :
+
+-   b = the lapserate (spline interpolated to the target resolution)
+
+-   c = the 1km reference digital elevation model (spline interpolated to the target resolution). For CHELSA that GMTED2010
+
+-   d = the 1km temperature layer (spline interpolated to the reference resolution).
+
+The c layer is not clear to me.
+
+```{r, echo=T}
+# 1. Load the mean annual laspe rates, crop over Crozet/Ker
+lapse <- raster("../data/Jonas/mean_annual.tif") # 1 km mean annual lapse rates
+res(lapse) # 
+# provide coordinates of crop window centered on Crozet:
+box2 <- c(51.4, 52, -46.6, -46.2) 
+
+# crop 
+small_lapse <- crop(lapse, box2) 
+# this box provides a padding around the island :  it's bigger than Crozet so 
+# that I downscale from more than just 1 1km temperature pixel. 
+box3 <- extent(small_lapse) # the extent from box2 was extended to include all pixels
+plot(small_lapse) 
+
+```
+
+L'île de la Possession is somewhere on those middle giant pixels
+
+```{r, echo=T}
+# 2. Load high-resolution DEM, crop over Crozet/Ker
+DEM <- raster("../data/DEM/cro/Cro_DEM.tif")
+
+# crop it to the same size as the lapse rates
+small_DEM <- crop(DEM, box2)
+res(small_DEM)
+plot(small_DEM, main="DEM fine scale") 
+
+```
+
+```{r, echo=T}
+  # 3. Spline-interpolate lapse rates by the high-res DEM
+  s_lapse_dem <- resample(small_lapse, small_DEM, method = 'bilinear') # resample output
+  res(s_lapse_dem)
+  res(small_DEM) # should be the same as s_lapse_rates
+  
+  plot(s_lapse_dem)
+  # now we have lapse rates at the super fine scale of the DEM...
+```
+
+sunset paradise smoothie...
+
+```{r, echo=T}
+  
+# 4. Load the CHELSA bioclim layer. 
+# Here I used the monthly 1km temperature means, from 1981 to 2010. 
+
+biolayer <- raster("../data/chelsa/CHELSA_bio1_1981-2010_V.2.1.tif")
+res(biolayer)
+# crop it over Crozet :
+biolayer <- crop(biolayer, box3) # 1 km temp rates
+plot(biolayer)
+```
+
+```{r, echo=T}
+
+# 5. spline-interpolate lapse rates by the DEM
+s_biolayer_dem <- resample(biolayer, small_DEM, method = 'bilinear') # resample output
+res(s_biolayer_dem) 
+res(biolayer) 
+# so now we also have the Chelsa temperatures downscaled at the very fine 
+# resolution of the DEM
+
+plot(s_biolayer_dem)
+```
+
+```{r, echo=T}
+
+# 6 : resample DEM at biolayer resolution.
+# this is because we don't have the c = the 1km reference digital elevation model (spline interpolated to the target resolution), so what Jonas did was to upscale the target resolution DEM up to 1km...
+s_dem_biolayer <- resample(small_DEM, biolayer, method ='bilinear')
+plot(s_dem_biolayer)
+```
+
+Not sure this is kosher. I should perhaps use twhat CHELSA uses, GMTED2010 ? Not sure what this is but I'll look.
+
+```{r, echo=T}
+# 7. spline-interpolate the DEM at biolayer resolution at the DEM
+ss_dem_bio_dem <- resample(s_dem_biolayer, small_DEM, method='bilinear')
+res(ss_dem_bio_dem)
+plot(ss_dem_bio_dem)
+```
+
+```{r, echo=T}
+
+# 8. Use the formula given by Jonas to calculate the downscaled temperature : T = d-b*(a-c)
+# a = the digital elevation model at the target resolution
+# b = the lapserate (spline interpolated to the target resolution)
+# c = the 1km reference digital elevation model (spline interpolated to the target resolution). For CHELSA that GMTED2010
+# d = the 1km temperature layer (spline interpolated to the reference resolution).
+T_downscaled <- s_biolayer_dem - s_lapse_dem * (small_DEM - ss_dem_bio_dem)
+
+plot(T_downscaled)
 
 
+small_T <- crop(T_downscaled, box2)
+plot(small_T)
+```
 
-
+OK so this is what all this was for. Looks alright..?
