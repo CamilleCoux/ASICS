@@ -11,7 +11,7 @@ library(osmdata)
 library(ggmap)
 library(rtry)
 library(rentrez)
-source("functions.R")
+
 
 theme_set(theme_bw())
 
@@ -46,7 +46,7 @@ natives <- d %>%
   unname %>% 
   droplevels
 
-try_sp <- read.csv("../data/TryAccSpecies.txt", sep="\t")
+try_sp <- read.csv("../data/traits_trees/TryAccSpecies.txt", sep="\t")
 head(try_sp)
 essai$AccSpeciesID
 essai$AccSpeciesName
@@ -55,26 +55,49 @@ essai$AccSpeciesName
 essai <- try_sp %>%
   filter(AccSpeciesName %in% natives)
 
+
+# get the species AccNumbers to retrieve from TRY:
+nums <- essai$AccSpeciesID %>% paste(., collapse = ",")
+
+# then : copypaste the species numbers in TRY > data portal > data explorer >
+# traits table for multiple species and download
+# remove the 3 1st lines from the text file
+# get traitIDs :
+traitIDs <-  read.csv("../data/traits_trees/get_trait_IDs.txt", sep="\t")[-20]
+
+# need in binary
+trID <- traitIDs[, 3:19]
+trID[trID != 0] <- 1
+trID %>% rowSums() 
+# ==> OK, forget about traits. 
+
+
+
+
+
 not <- natives[-which(natives %in% try_sp$AccSpeciesName)] 
-not <- not[-3]
 
 Colobanthus <- try_sp[grep("Colobanthus", try_sp$AccSpeciesName),]
 Notogrammitis <- try_sp[grep("Notogrammitis", try_sp$AccSpeciesName),] # 0, just like for Austroblechnum
-# so there's not much to do, except exclude these species from the analysis 
+# so there's not much to do, except exclude these species from the analysis for the traits bit.
+# for the phylogenies, I'm goint to use sister species, but not sure this would be relevant for the traits bit
 
 # get the AccNum:
 # read in the trait data downloaded from TRY webversion : 
 
-tr <- read.csv("../data/David_plantes_KerCro/22563.txt", sep="\t")
+tr1 <- read.csv("../data/traits_trees/22563.txt", sep="\t")
+tr2 <- read.csv("../data/traits_trees/23996.txt", sep="\t")
 
-tr$TraitName %>% unique
+tr1$TraitName %>% unique
+tr2$TraitName %>% unique
 # only 6 species in the Try database that have entries for those traits
-(tr$AccSpeciesName %>% unique) %in% natives
+(tr1$AccSpeciesName %>% unique) %in% natives
+(tr2$AccSpeciesName %>% unique) %in% natives
 
 # new strategy : find out for which traits we have the most entries for our native species list:
 
-try_sp <-  read.csv("../data/TryAccSpecies.txt", sep="\t")
-tr_list <- read.csv("../data/try_traits_list.txt", sep="\t")
+try_sp <-  read.csv("../data/traits_trees/TryAccSpecies.txt", sep="\t")
+tr_list <- read.csv("../data/traits_trees/try_traits_list.txt", sep="\t")
 
 tr_list <- tr_list[rev(order(tr_list$AccSpecNum)),c("TraitID","Trait", "AccSpecNum")]
 
@@ -89,7 +112,7 @@ tr_list$TraitID[tr_list$Trait %in% tr_sel]
 tr_sp_sel <- try_sp %>% dplyr::filter(AccSpeciesName %in% natives) %>%
   dplyr::select(AccSpeciesID) %>% as.vector()
 
-tr_sel <- read.csv("../data/Try_traits_selection.txt", sep="\t")
+tr_sel <- read.csv("../data/traits_trees/Try_traits_selection.txt", sep="\t")
 tr_sel %<>%  dplyr::filter(AccSpeciesName %in% natives)
 rownames(tr_sel) <- tr_sel$AccSpeciesName
 tr_sel$X <- NULL
@@ -102,6 +125,11 @@ tr_sel %>% rowSums
 tr_sel %>% colSums
 
 tr_sel %>% dplyr::select(Plant.growth.form,  Plant.height.vegetative, SLA  )
+
+
+
+
+
 
 # retrieve the genbank sequences for the remL gene, and the MatK
 library(rentrez)
