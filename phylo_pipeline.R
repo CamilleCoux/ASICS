@@ -6,6 +6,8 @@
 # Opt 1: let phylo.maker get the info from GenBank and create tree. Super fast,
 # but black box.
 
+# remotes::install_github("jinyizju/V.PhyloMaker")
+
 library(tidyverse)
 library(V.PhyloMaker)
 library(brranching)
@@ -17,6 +19,7 @@ library(ggtree)
 library(DECIPHER)
 library(viridis)
 library(ggplot2)
+
 
 # species list : 
 d <- read.csv("../data/David_plantes_KerCro/202209_TAAF_HFI_plants_data_complete_UTF8.csv",  
@@ -49,6 +52,9 @@ sp_tab <- str_split_fixed(phylo_names, "/", 3) %>% data.frame
 colnames(sp_tab) = c("family", "genus", "species")
 sp_tab <- sp_tab[, c(3, 2, 1)]
 
+
+# write.csv2(sp_tab, file="../data/traits_trees/native_sp_genus_fam_tab.csv")
+
 # selected all scenarios to compare, but turns out they're equivalent
 result <- phylo.maker(sp_tab, scenarios=c("S1", "S2","S3"))
 s3tree <- result[[3]]
@@ -57,7 +63,61 @@ plot(s3tree, cex = 0.6)
 class(s3tree)
 
 
-save(result, file="C:/Users/coux/Documents/ASICS/data/traits_trees/phylomaker_tree.RData")
+save(result, file="../data/traits_trees/phylomaker_tree.RData")
+
+
+
+
+# to compare branch lengths of sister species :
+
+
+sp_tab <- read.csv2("../data/traits_trees/native_sp_genus_fam_tab.csv")
+load("../data/traits_trees/phylomaker_tree.RData")
+
+need_sisters <- result$species.list %>% 
+  dplyr::filter(status=="bind") %>%
+  dplyr::select(genus)
+
+
+GBOTB.extended$tip.label %in% sp_tab$genus
+
+
+cali <- grep("Poa", GBOTB.extended$tip.label, value = T)
+try_sp <- read.csv("../data/traits_trees/TryAccSpecies.txt", sep="\t")
+poa <- grep("Poa", try_sp$AccSpeciesName, value = T)
+
+cali<- grep("Callitriche", try_sp$AccSpeciesName, value = T)
+
+
+essai <- need_sisters %>%
+  split(need_sisters) %>%
+  purrr::map(function(x){
+    tmp <- grep(paste0("^", x), tolower(GBOTB.extended$tip.label), value = T )
+    return(tmp)
+  })
+
+essai2 <- unlist(essai[1:5])
+names(essai2) <- NULL
+
+# remove the underscores
+essai2 <- gsub("_", " ", essai2)
+
+phylo_names <- phylomatic_names(essai2 %>% toTitleCase, 
+                                format='isubmit', db="ncbi") 
+
+# need to arrange the phylo names into dataframe with columns in right order:
+
+sp_tab <- str_split_fixed(phylo_names, "/", 3) %>% data.frame 
+colnames(sp_tab) = c("family", "genus", "species")
+sp_tab <- sp_tab[, c(3, 2, 1)]
+
+sp_tab$genus <- gsub("_.+", "", sp_tab$genus)
+test_tree <- phylo.maker(sp_tab , scenarios=c("S3"))
+
+
+s3tree <- test_tree[[1]]
+plot(s3tree, cex = 0.6)
+
 
 ### OPTION 3 -------------------------------------------------------------------
 
