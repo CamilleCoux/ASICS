@@ -64,7 +64,7 @@ XData$id <- 1:nrow(XData) %>% as.factor
 
 
 
-# With transparency (right)
+# to check correlation of precipitation and exposition # what is AA in expo ??
 ggplot(data=XData, aes(x=accum_prec, group=exposition, fill=exposition)) +
   geom_density(adjust=1.5, alpha=.4) +
   scale_fill_viridis(discrete=T) +
@@ -548,10 +548,7 @@ showOmega = TRUE
 maxOmega = 100
 showRho = TRUE
 showAlpha = TRUE
-##################################################################################################
-# CHANGE DEFAULT OPTIONS BY REMOVING COMMENT AND SETTING VALUE (END)
-# NOTE THAT THIS IS THE ONLY SECTION OF THE SCRIPT THAT YOU TYPICALLY NEED TO MODIFY
-##################################################################################################
+
 
 ##################################################################################################
 # SET DIRECTORIES (BEGINNING)

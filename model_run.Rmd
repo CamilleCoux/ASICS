@@ -1,52 +1,161 @@
 ---
 title: "HMSC 1st model runs"
-output: 
-word_document: default
+output:
+  pdf_document: default
   html_document:
     df_print: paged
+  word_document: default
 ---
 
-```{r, error=FALSE, eval=TRUE,message=FALSE, warning=FALSE}
-
-library(Hmsc)
-library(ape) 
-library(viridis)
-source("process_occurrences.R")
-
-Y = as.matrix(cro_com_mat)
+The purpose here is to run a first series of models for Crozet and explore the results I extracted using the HMSC pipeline. Here I show the results for a model using 4 chains, 250 samples, and a thinning of 1000.
 
 
-# READ AND MODIFY ENVIRONMENTAL DATA (BEGINNING)
-XData = env_vars %>% 
-  st_drop_geometry %>%
-  dplyr::select(accum_prec, mean_temp, numero_observation, 
-                jour,mois,annee,date_observation,pente,exposition)
+## Model inputs
+
+```{r,echo = FALSE}
+
+load("models/20_12_22/S2_fit_models_thin_1000_samples_250_chains_4.Rdata")
+
 ```
 
-```{r, echo=F}
+```{r}
+# Y = community pres/abs matrix of 1956 sites * 19 species (all but Limosella australis that was too rare)
+# XData = the environmental matrix :
+XData <- models$`presence-absence model`$XData
+head(XData)
 
-# remove Nas from XData
-XData <- na.omit(XData)
-
-
-str(XData)
-XData$numero_observation %<>% as.factor
-XData$jour %<>% as.integer
-XData$mois %<>% as.integer
-
-XData$annee %<>% as.integer
-XData$pente %<>% as.factor
-XData$exposition %<>% as.factor
-XData$date_observation <- NULL
-
-XData$id <- 1:nrow(XData) %>% as.factor
-
-
-
-# With transparency (right)
-ggplot(data=XData, aes(x=accum_prec, group=exposition, fill=exposition)) +
-  geom_density(adjust=1.5, alpha=.4) +
-  scale_fill_viridis(discrete=T) +
-  scale_color_viridis(discrete=T) 
-#p2
 ```
+
+accum_prec = Accumulated precipitation amount over 1 year (bio12 CHELSA), 0.008333 resolution (~1 km)
+
+mean_temp = mean temperature downscaled to ~30m, based on mean annual daily mean air temperatures averaged over 1 year (bio1 CHELSA), from 1981-2010
+
+pente et expostion = terrain variables that come from field measures in the TAAF
+
+jour mois annee = field sampling dates for pres/abs data
+
+
+```{r}
+# phylogenetic tree for Crozet. I kept the phylo.maker one.
+phylotree <- ape::read.tree("../data/traits_trees/phylomaker_tree")
+phylotree$tip.label <- gsub("_", " ", phylotree$tip.label)
+
+# need to remove Limosella australis for Crozet
+phylo_cro <- ape::drop.tip(phylotree, tip = "Limosella australis")
+plot(phylo_cro)
+
+```
+
+Still no traits, and there wil be none from TRY ==> not enough traits measured across all plant species.
+
+
+HMSC also needs the followong : 
+
+```{r}
+
+# STUDY DESIGN
+studyDesign = data.frame(site=XData$numero_observation, id=XData$id)
+
+# RANDOM EFFECT STRUCTURE, HERE Site (hierarchical study design)
+rL.site = Hmsc::HmscRandomLevel(units = levels(studyDesign$site))
+str(rL.site)
+
+```
+
+Not too sure what this does in detail, but it has default parameters to estimate the random effects. I didn't alter this.
+
+```{r}
+# and optionally id, if we are interested in species associations at that level
+rL.id = Hmsc::HmscRandomLevel(units = levels(studyDesign$id))
+str(rL.site)
+```
+Same structure as the site random level, except this one is supposed to be much finer, at the observation scale.
+
+
+
+## Model structure 
+
+```{r, eval=FALSE}
+# REGRESSION MODEL FOR ENVIRONMENTAL COVARIATES.
+XFormula = ~ mean_temp + accum_prec + pente + exposition
+
+# REGRESSION MODEL FOR TRAITS : none.
+
+# PRESENCE-ABSENCE MODEL FOR INDIVIDUAL SPECIES (COMMON ONLY)
+m = Hmsc::Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
+         # TrData = TrData, TrFormula = TrFormula,
+         phyloTree = phylo_cro,
+         distr="probit",
+         studyDesign = studyDesign, ranLevels=list(site=rL.site, id=rL.id))
+```
+
+## Model fit
+
+input parameters : 
+
+* nChains = 4
+
+* nParallel = nChains
+
+* samples=250, thin=1000
+
+
+```{r, eval=FALSE}
+m = Hmsc::sampleMcmc(m, samples = samples, thin=thin,
+               adaptNf=rep(ceiling(0.4*samples*thin),m$nr), 
+               transient = ceiling(0.5*samples*thin),
+               nChains = nChains,
+               nParallel = nParallel) 
+```
+
+
+## Results
+
+See pdf called "results/parameter_estimates_ex2.pdf").
+
+* Variance partitioning plot: The corresponding values are in "results/parameter_estimates_VP_presence_absence_model.csv"
+
+There's also this : "results/parameter_estimates_VP_R2T_Beta.csv" : it looks at the beta estimates for each level of the environmental factor variables, but it didn't work (NAs). Not sure why but doesn't matter too much for us I think.
+
+* Beta plot : the posterior beta estimates for each plant * covariate. Corresponding values in "results/parameter_estimates_Beta_ presence-absence model.xls"
+
+* Omega plots : associations between species at the site and id level.
+
+
+## Evaluate model fit
+
+I'm not sure I did this right. 
+
+nfolds = NULL #Default: two-fold cross-validation. There's a place in the code where I think we're supposed to specify the column (variable) over which the fold should be done. I didn't..
+
+It's all stored in the "models/MF_thin_1000_samples_250_chains_4_nfolds_2.RData", and the results are in "results/model_fit_nfolds_2.pdf". But I don't understand these plots.
+
+
+## Make predictitons
+
+See the "results/predictions.pdf". 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

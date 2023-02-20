@@ -264,6 +264,8 @@ env_vars <- st_extract(st_as_stars(prec14_cro), env_vars) %>%
   unique
 rownames(env_vars) <- 1:nrow(env_vars)
 
+# write.csv2(env_vars, "../data/sdm_inputs/env_data_cro.csv")
+
 }
 
 
@@ -339,8 +341,10 @@ if(!crozet){
     unique
   rownames(env_vars) <- 1:nrow(env_vars)
   
-}
+  
+  # write.csv2(env_vars, "../data/sdm_inputs/env_data_ker.csv")
 
+}
 
 
 
