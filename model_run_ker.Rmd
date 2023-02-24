@@ -1,5 +1,5 @@
 ---
-title: "HMSC 1st model runs - CROZET"
+title: "HMSC 1st model runs - KERGUELEN "
 output:
   pdf_document: default
   html_document:
@@ -7,14 +7,14 @@ output:
   word_document: default
 ---
 
-The purpose here is to run a first series of models for Crozet and explore the results I extracted using the HMSC pipeline. Here I show the results for a model using 4 chains, 250 samples, and a thinning of 1000.
+The purpose here is to run a first series of models for Kerguelen and explore the results I extracted using the HMSC pipeline. Here I show the results for a model using 4 chains, 250 samples, and a thinning of 1000.
 
 
 ## Model inputs
 
 ```{r,echo = FALSE}
 
-load("models/S2_fit_models_thin_1000_samples_250_chains_4.Rdata")
+load("ker/models/S2_fit_models_thin_1000_samples_250_chains_4.Rdata")
 
 ```
 
@@ -40,9 +40,9 @@ jour mois annee = field sampling dates for pres/abs data
 phylotree <- ape::read.tree("../data/traits_trees/phylomaker_tree")
 phylotree$tip.label <- gsub("_", " ", phylotree$tip.label)
 
-# need to remove Limosella australis for Crozet
-phylo_cro <- ape::drop.tip(phylotree, tip = "Limosella australis")
-plot(phylo_cro)
+# need to remove Notogrammitis crassior for Kerguelen
+phylo_ker <- ape::drop.tip(phylotree, tip = "Notogrammitis crassior")
+plot(phylo_ker)
 
 ```
 
@@ -84,7 +84,7 @@ XFormula = ~ mean_temp + accum_prec + pente + exposition
 # PRESENCE-ABSENCE MODEL FOR INDIVIDUAL SPECIES (COMMON ONLY)
 m = Hmsc::Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
          # TrData = TrData, TrFormula = TrFormula,
-         phyloTree = phylo_cro,
+         phyloTree = phylo_ker,
          distr="probit",
          studyDesign = studyDesign, ranLevels=list(site=rL.site, id=rL.id))
 ```
@@ -111,11 +111,11 @@ m = Hmsc::sampleMcmc(m, samples = samples, thin=thin,
 
 ## Results
 
-See pdf called "results/parameter_estimates_ex2.pdf").
+See pdf called "ker/results/parameter_estimates_ex2.pdf").
 
-* Variance partitioning plot: The corresponding values are in "results/parameter_estimates_VP_presence_absence_model.csv"
+* Variance partitioning plot: The corresponding values are in "ker/results/parameter_estimates_VP_presence_absence_model.csv"
 
-There's also this : "results/parameter_estimates_VP_R2T_Beta.csv" : it looks at the beta estimates for each level of the environmental factor variables, but it didn't work (NAs). Not sure why but doesn't matter too much for us I think.
+There's also this : "ker/results/parameter_estimates_VP_R2T_Beta.csv" : it looks at the beta estimates for each level of the environmental factor variables, but it didn't work (NAs). Not sure why but doesn't matter too much for us I think.
 
 * Beta plot : the posterior beta estimates for each plant * covariate. Corresponding values in "results/parameter_estimates_Beta_ presence-absence model.xls"
 
@@ -128,12 +128,12 @@ I'm not sure I did this right.
 
 nfolds = NULL #Default: two-fold cross-validation. There's a place in the code where I think we're supposed to specify the column (variable) over which the fold should be done. I didn't..
 
-It's all stored in the "models/MF_thin_1000_samples_250_chains_4_nfolds_2.RData", and the results are in "results/model_fit_nfolds_2.pdf". But I don't understand these plots.
+It's all stored in the "ker/models/MF_thin_1000_samples_250_chains_4_nfolds_2.RData", and the results are in "ker/results/model_fit_nfolds_2.pdf". But I don't understand these plots.
 
 
 ## Make predictitons
 
-See the "results/predictions.pdf". 
+See the "ker/results/predictions.pdf". 
 
 
 

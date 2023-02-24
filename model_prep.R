@@ -14,12 +14,12 @@ library(viridis)
 
 # SET DIRECTORIES 
 if (crozet){
-  localDir = "C:/Users/coux/Documents/ASICS/ASICS_code/cro"
+  localDir = "cro"
   if(!dir.exists(localDir)) dir.create(localDir)
   modelDir = file.path(localDir, "models/")
   if(!dir.exists(modelDir)) dir.create(modelDir)
 }else{
-  localDir = "C:/Users/coux/Documents/ASICS/ASICS_code/ker"
+  localDir = "ker"
   if(!dir.exists(localDir)) dir.create(localDir)
   modelDir = file.path(localDir, "models/")
   if(!dir.exists(modelDir)) dir.create(modelDir)
