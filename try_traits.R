@@ -36,11 +36,11 @@ d[c("jour", "mois", "annee")] <- str_split_fixed(d$date_observation, "/", 3)
 
 # Native plants that are present on both Cro and Ker : 
 natives <- d %>% 
-  filter(statut == "Native") %>%
-  count(district, taxon) %>%
-  count(taxon) %>%
-  filter(n==2) %>%
-  select(taxon) %>%
+  dplyr::filter(statut == "Native") %>%
+  dplyr::count(district, taxon) %>%
+  dplyr::count(taxon) %>%
+  dplyr::filter(n==2) %>%
+  dplyr::select(taxon) %>%
   unique %>%
   unlist %>%
   unname %>% 
@@ -48,13 +48,12 @@ natives <- d %>%
 
 try_sp <- read.csv("../data/traits_trees/TryAccSpecies.txt", sep="\t")
 head(try_sp)
-essai$AccSpeciesID
-essai$AccSpeciesName
-
 
 essai <- try_sp %>%
   filter(AccSpeciesName %in% natives)
 
+essai$AccSpeciesID
+essai$AccSpeciesName
 
 # get the species AccNumbers to retrieve from TRY:
 nums <- essai$AccSpeciesID %>% paste(., collapse = ",")
@@ -64,12 +63,24 @@ nums <- essai$AccSpeciesID %>% paste(., collapse = ",")
 # remove the 3 1st lines from the text file
 # get traitIDs :
 traitIDs <-  read.csv("../data/traits_trees/get_trait_IDs.txt", sep="\t")[-20]
-
+colnames(traitIDs) <- gsub("^\\.|\\.$", "", colnames(traitIDs))
 # need in binary
-trID <- traitIDs[, 3:19]
-trID[trID != 0] <- 1
-trID %>% rowSums() 
-# ==> OK, forget about traits. 
+for (i in 1:nrow(traitIDs)){
+  for (j in 3:ncol(traitIDs)){
+    if(traitIDs[i, j] !=0) {traitIDs[i,j] <- 1}
+  }
+}
+
+traitIDs$rowsums <- traitIDs[, 3:19] %>% rowSums() 
+sub <- traitIDs[order(traitIDs$rowsums, decreasing = T), ]
+sub <- sub %>% dplyr::filter(rowsums >6)
+
+foo <- data.frame(index = 3:19, species = colnames(sub)[3:19], nb = colSums(sub[3:19]))
+foo <- foo[order(foo$nb, decreasing = T),]
+
+sub[, c(1, 2, foo$index[1:15], 20)]
+
+
 
 
 
