@@ -64,6 +64,10 @@ nums <- essai$AccSpeciesID %>% paste(., collapse = ",")
 # get traitIDs :
 traitIDs <-  read.csv("../data/traits_trees/get_trait_IDs.txt", sep="\t")[-20]
 colnames(traitIDs) <- gsub("^\\.|\\.$", "", colnames(traitIDs))
+
+
+
+# --------------- work in progress : figure out which traits an which species to keep -------
 # need in binary
 for (i in 1:nrow(traitIDs)){
   for (j in 3:ncol(traitIDs)){
@@ -71,20 +75,79 @@ for (i in 1:nrow(traitIDs)){
   }
 }
 
-traitIDs$rowsums <- traitIDs[, 3:19] %>% rowSums() 
+traitIDs$rowsums <- traitIDs[, 3:19] %>% rowSums()
 sub <- traitIDs[order(traitIDs$rowsums, decreasing = T), ]
 sub <- sub %>% dplyr::filter(rowsums >6)
+
+# so now I'll file a request for those 20 traits on TRY
+sub$TraitID %>% paste(., collapse = ",")
+tr_measures <- read.csv2("../data/traits_trees/try_20_traits_all_sp.txt", sep="\t")
+tr_measures %>% head
+
 
 foo <- data.frame(index = 3:19, species = colnames(sub)[3:19], nb = colSums(sub[3:19]))
 foo <- foo[order(foo$nb, decreasing = T),]
 
 sub[, c(1, 2, foo$index[1:15], 20)]
 
+sub[, foo$index[1:15]] %>% as.matrix %>% image.plot
+
+
+
+############################################################################
+mat <- sub[, c(2, foo$index[1:15])]
+mat <- column_to_rownames(mat, "TraitID")
+############################################################################
+
+
+bloo <- sub[, c(1, 2, foo$index[1:15])] %>% pivot_longer(!c(Trait, TraitID), names_to="species", values_to = "nb")
+ggplot(bloo, aes( x=Trait, y=species, fill=nb) ) +
+  geom_tile()
+
+bloo2 <- sub[, c(1,foo$index[1:15])] %>%
+  gather(key="species", value="z", -1) %>%
+  ggplot(aes(Trait, species, fill=z))+
+  geom_tile()
+# --------------- work in progress : end -------
 
 
 
 
+# ok. Imagine I've sorted out which traits and species I wanna keep. Now I need
+# to get those trait values for each species....
+ordered <- read.csv2("../data/traits_trees/trait_sp_binmat_optim.csv", sep=",", row.names = 1)
+keeps <- ordered[1:8, 1:13]
+sp_names <- colnames(keeps) %>% gsub("\\.", " ", .)
+tr_id <- rownames(keeps)
 
+
+# read in the trait data downloaded from TRY webversion : 
+
+tr2 <- read.csv("../data/traits_trees/23996.txt", sep="\t")
+
+trait_vals <- tr2 %>%
+  dplyr::select(AccSpeciesName, TraitID, TraitName, OrigValueStr, StdValue) %>%
+  dplyr::filter(TraitID %in% tr_id) %>%
+  dplyr::filter(AccSpeciesName %in% sp_names)
+
+trait_vals$TraitID %>% unique
+
+foo <- trait_vals %>%
+  dplyr::filter(TraitID == 38 ) 
+foo$OrigValueStr %>% unique %>% as.numeric %>% range
+foo$StdValue %>% unique %>% range
+
+trait_vals$TraitName %>% unique
+
+trait_vals %>%
+  split(., .$AccSpeciesName) %>%
+  lapply(., function(x){
+    split(x, x$TraitID) %>%
+      lapply(., function(y){
+        if (y$TraitID == 42)
+        tab <- y
+      })
+  })
 
 not <- natives[-which(natives %in% try_sp$AccSpeciesName)] 
 
