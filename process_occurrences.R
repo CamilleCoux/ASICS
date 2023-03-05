@@ -96,7 +96,8 @@ natives <- d %>%
 nats <- d %>%
   dplyr::filter(taxon %in% natives) %>%
   dplyr::select(id,district, numero_observation,taxon, statut, pente, exposition, 
-  latitude,longitude,Observateur,date_observation, jour,mois,annee,surf2)
+                sociabilite,  latitude,longitude,Observateur,date_observation, 
+                jour,mois,annee,surf2)
 
 # remove the surfaces that are too large to be trusted : 
 # nats$surf2 %>% summary

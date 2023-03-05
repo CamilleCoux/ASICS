@@ -79,6 +79,16 @@ traitIDs$rowsums <- traitIDs[, 3:19] %>% rowSums()
 sub <- traitIDs[order(traitIDs$rowsums, decreasing = T), ]
 sub <- sub %>% dplyr::filter(rowsums >6)
 
+# get the trait measures from the 
+tr_measures <- read.csv("../data/traits_trees/25266.txt", sep="\t")
+
+tr_measures$TraitID %>% unique %>% sort
+
+
+
+
+
+
 # so now I'll file a request for those 20 traits on TRY
 sub$TraitID %>% paste(., collapse = ",")
 tr_measures <- read.csv2("../data/traits_trees/try_20_traits_all_sp.txt", sep="\t")

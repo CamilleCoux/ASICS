@@ -1,8 +1,8 @@
 # Set the base directory
 # setwd("../formations/HMSC/case study exercises/")
 
-# # define whether analysis over Crozet or Kergeulen :
-# crozet = TRUE
+# define whether analysis over Crozet or Kergeulen :
+crozet = TRUE
 
 set.seed(1)
 
@@ -16,17 +16,14 @@ library(viridis)
 if (crozet){
   localDir = "cro"
   if(!dir.exists(localDir)) dir.create(localDir)
-  modelDir = file.path(localDir, "models/with_traits/")
+  modelDir = file.path(localDir, "models/equalbranchlengths")
   if(!dir.exists(modelDir)) dir.create(modelDir)
 }else{
   localDir = "ker"
   if(!dir.exists(localDir)) dir.create(localDir)
-  modelDir = file.path(localDir, "models/with_traits")
+  modelDir = file.path(localDir, "models/equalbranchlengths")
   if(!dir.exists(modelDir)) dir.create(modelDir)
 }
-
-
-
 
 
 
@@ -35,12 +32,9 @@ if (crozet){
 # data = read.csv(file.path(dataDir, "species.csv"))
 source("process_occurrences.R")
 
-
-
-
 if (crozet){
   Y = as.matrix(cro_com_mat)
-  }else{
+}else{
   Y = as.matrix(ker_com_mat)
 }
 
@@ -81,52 +75,99 @@ ggplot(data=XData, aes(x=accum_prec, group=exposition, fill=exposition)) +
 # READ AND MODIFY PHYLO DATA 
 ################################################################################
 
-# script to build tree is in ASICS/ASICS_code/phylo_pipeline.R
-
+# build a tree with equal branchlengths to compare, but not sure this is what i want !
 phylotree <- read.tree("../data/traits_trees/phylomaker_tree")
 plot(phylotree)
 phylotree$tip.label <- gsub("_", " ", phylotree$tip.label)
+phylotree$edge.length <- rep(1,length(phylotree$edge))
+plot(phylotree)
 
 # need to remove Limosella australis for Crozet
 if (crozet){
-  phylo_cro <- drop.tip(phylotree, tip = "Limosella australis")
+  phylo_cro <- drop.tip(phylotree, tip = "Limosella_australis")
   plot(phylo_cro)
 }else{
-  phylo_ker <- drop.tip(phylotree, tip = "Notogrammitis crassior")
+  phylo_ker <- drop.tip(phylotree, tip = "Notogrammitis_crassior")
   plot(phylo_ker)
 }
 
 
-##################################################################################################
-# READ AND MODIFY TRAIT DATA (sp x traits matrix)
+# READ AND MODIFY TRAIT DATA (none so far..)
 ################################################################################
+# traits_try1 <- read.table("../data/traits_trees/22563.txt", sep="\t", header=T, na.strings = "NA", dec=".", fill=T, quote="")
+# traits_try2 <- read.table("../data/traits_trees/23996.txt", sep="\t", header=T, na.strings = "NA", dec=".", fill=T, quote="")
+# 
+# # remove all lines which don't have a measured value
+# traits_try2 <- traits_try2[which(!is.na(traits_try2$StdValue)),]
+# # remove all lines that don't correspond to a trait measure
+# traits_try2 <- traits_try2[which(!is.na(traits_try2$TraitID)),]
+# 
+# # evaluate completedness : 
+# foo <- traits_try2 %>% 
+#   dplyr::select(TraitName, AccSpeciesName) %>%
+#   table %>% 
+#   as.data.frame %>%
+#   pivot_wider(names_from = AccSpeciesName, 
+#               values_from = Freq) %>%
+#   as.data.frame
+# rownames(foo) <- foo$TraitName
+# foo <- foo[, -1]
+# # How many trait values per plant ?
+# foo %>% colSums()
+# # how many plant scores per trait ?
+# foo %>% rowSums()
+# 
+# 
+# # if the idea is to make a mean of the multiple trait values for each plant, 
+# # how many values per plant do we have ?
+# 
+# plot(traits_try2$AccSpeciesName ~ traits_try2$TraitName)
+# t2 <- traits_try2 %>% 
+#   dplyr::select(TraitName, DataName, OrigValueStr, StdValue) %>%
+#   unique
+# 
+# t2 %>%
+#   dplyr::select(AccSpeciesName, TraitName) %>%
+#   group_by(TraitName) %>%
+#   dplyr::count(AccSpeciesName)
+# 
+# 
 
-source("process_traits.R")
 
 
-dim(t2)
-
-# keep only those species in the community mat, the phylo_mat and the env_vars 
-Y = Y[,plant_sp]
-# check prevalence : keep only common species
+##################################################################################################
+# SELECT COMMON SPECIES (BEGINNING)
+##################################################################################################
 prev = colSums(Y)
-sum(prev>=20) # all good
-# also remove sites where no data from Y and XData:
-empty <- which(rowSums(Y) == 0 )
+#  Limosella australis occurs only 2 times in the whole Crozet dataset ==> remove it. 
+# means I need to remove it from th phylo tree too. Perhaps also from the XData sites ?
+hist(prev)
+sum(prev>=10)
+sum(prev>=20)
+sel.sp = (prev>=20)
+Y = Y[,sel.sp] #presence-absence data for selected species
+# TrData = TrData[sel.sp,]
+# TrData = droplevels(TrData)
 
-Y <- Y[-empty,]
+# checking the cro_nats original data of Limosella occurs alone in the sites (in which case they need to be removed)
 
-XData <- XData[-which(XData$numero_observation %in% names(empty)), ] 
-XData <- droplevels(XData)
+rm_sites <- cro_nats %>% 
+  dplyr::filter(taxon=="Limosella australis") %>%
+  dplyr::select(numero_observation)
+
+cro_nats %>% 
+  dplyr::filter(numero_observation %in% rm_sites$numero_observation) # all good
+
+rm_sites <- ker_nats %>% 
+  dplyr::filter(taxon=="Notogrammitis crassior") %>%
+  dplyr::select(numero_observation)
+
+ker_nats %>% 
+  dplyr::filter(numero_observation %in% rm_sites$numero_observation)%>%
+  group_by(numero_observation) %>%
+  count %>% head(16)
 
 
-# trim phylo tree again:
-
-phylo_cro <- phylo_cro %>% keep.tip(colnames(Y))
-phylo_ker <- phylo_cro %>% keep.tip(colnames(Y))
-
-# specify  trait data
-TrData = t2 
 
 
 
@@ -142,7 +183,7 @@ rL.id = HmscRandomLevel(units = levels(studyDesign$id))
 # REGRESSION MODEL FOR ENVIRONMENTAL COVARIATES.
 XFormula = ~ mean_temp + accum_prec + pente + exposition
 # REGRESSION MODEL FOR TRAITS
-TrFormula = ~ height_m + SLA
+# TrFormula = ~ fb+orn+shape+volume
 # CONSTRUCT TAXONOMICAL TREE TO BE USED AS PROXY FOR PHYLOGENETIC TREE
 
 
@@ -150,8 +191,8 @@ TrFormula = ~ height_m + SLA
 if (crozet){
   # PRESENCE-ABSENCE MODEL FOR INDIVIDUAL SPECIES (COMMON ONLY)
   m = Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
-           #TrData = TrData, TrFormula = TrFormula,
-           #phyloTree = phylo_cro,
+           # TrData = TrData, TrFormula = TrFormula,
+           phyloTree = phylo_cro,
            distr="probit",
            studyDesign = studyDesign, ranLevels=list(site=rL.site, id=rL.id))
 }else{
@@ -193,8 +234,8 @@ nParallel = NULL #Default: nParallel = nChains
 
 # load(file=file.path(modelDir,"unfitted_models2.RData"))
 nm = length(models)
-samples_list = c(5,250,250,250,250)#,250)
-thin_list = c(1,1,10,100,1000)#,10000)
+samples_list = c(5,250,250,250)#,250,250)
+thin_list = c(1,1,10,100)#,1000,10000)
 nChains = 4
 nst = length(thin_list)
 
@@ -245,7 +286,7 @@ show.sp.names.omega = NULL #Default: species names shown in beta plot if there a
 
 
 # SET DIRECTORIES (BEGINNING)
-resultDir = file.path(localDir, "results/with_traits")
+resultDir = file.path(localDir, "results/equalbranchlengths")
 if (!dir.exists(resultDir)) dir.create(resultDir)
 
 
@@ -295,7 +336,7 @@ if(file.exists(filename)){
   
   modelnames = names(models)
   
-  pdf(file= file.path(resultDir,"parameter_estimates_ex2.pdf"))
+  pdf(file= file.path(resultDir,"parameter_estimates.pdf"))
   for(j in 1:nm){
     cat(c("\n",names(models)[j],"\n","\n"),file=text.file,sep="",append=TRUE)
     m = models[[j]]
@@ -482,8 +523,8 @@ if(file.exists(filename)){
 #	INPUT. Fitted models
 
 #	OUTPUT. MCMC convergence statistics for selected model parameters,
-# illustrated (for all RUNs performed thus far in S3) in the file "results/MCMC_convergence.pdf",
-# and the text file "results/MCMC_convergence.txt".
+# illustrated (for all RUNs performed thus far in S3) in the file "results/equalbranchlengths/MCMC_convergence.pdf",
+# and the text file "results/equalbranchlengths/MCMC_convergence.txt".
 
 
 set.seed(1)
@@ -526,8 +567,8 @@ library(Hmsc)
 library(colorspace)
 library(vioplot)
 
-samples_list = c(5,250,250,250,250)#,250)
-thin_list = c(1,1,10,100,1000)#,10000)
+samples_list = c(5,250,250,250)#,250,250)
+thin_list = c(1,1,10,100)#,1000,10000)
 nst = length(thin_list)
 nChains = 4
 
@@ -678,10 +719,10 @@ dev.off()
 # (which is part of cross-validation) done for multiple RUNs:
 # first short MCMC chains (to provide some results fast), and then with increasingly long MCMC chains
 # (up to the longest run performed in S2). The results are stored in the files
-# "models/MF_thin_1_samples_5_chains_4.Rdata" (RUN 0),
-# "models/MF_thin_1_samples_250_chains_4.Rdata" (RUN 1),
-# "models/MF_thin_10_samples_250_chains_4.Rdata" (RUN 2), 
-# "models/MF_thin_100_samples_250_chains_4.Rdata" (RUN 3), and so on.
+# "models/equalbranchlengths/MF_thin_1_samples_5_chains_4.Rdata" (RUN 0),
+# "models/equalbranchlengths/MF_thin_1_samples_250_chains_4.Rdata" (RUN 1),
+# "models/equalbranchlengths/MF_thin_10_samples_250_chains_4.Rdata" (RUN 2), 
+# "models/equalbranchlengths/MF_thin_100_samples_250_chains_4.Rdata" (RUN 3), and so on.
 
 set.seed(1)
 
@@ -701,8 +742,8 @@ nParallel = NULL #Default: nParallel = nChains
 if(is.null(nfolds)) nfolds = 2
 
 library(Hmsc)
-samples_list = c(5,250,250,250,250)#,250)
-thin_list = c(1,1,10,100,1000)#,10000)
+samples_list = c(5,250,250,250)#,250,250)
+thin_list = c(1,1,10,100)#,1000,10000)
 nChains = 4
 if(is.null(nParallel)) nParallel = nChains
 Lst = 1
@@ -756,7 +797,7 @@ while(Lst <= length(samples_list)){
 # 5.SHOW MODEL FIT
 
 #	INPUT. Model fits.
-#	OUTPUT. Model fits illustrated (for highest RUN of S4) in the file "results/model_fit.pdf".
+#	OUTPUT. Model fits illustrated (for highest RUN of S4) in the file "results/equalbranchlengths/model_fit.pdf".
 
 nfolds = NULL #Default: two-fold cross-validation
 
@@ -771,8 +812,8 @@ if(is.null(nfolds)) nfolds = 2
 
 library(Hmsc)
 
-samples_list = c(5,250,250,250,250)#,250)
-thin_list = c(1,1,10,100,1000)#,10000)
+samples_list = c(5,250,250,250)#,250,250)
+thin_list = c(1,1,10,100)#,1000,10000)
 nst = length(thin_list)
 nChains = 4
 
@@ -955,8 +996,8 @@ library(colorspace)
 library(corrplot)
 library(writexl)
 
-samples_list = c(5,250,250,250,250)#,250)
-thin_list = c(1,1,10,100,1000)#,10000)
+samples_list = c(5,250,250,250)#,250,250)
+thin_list = c(1,1,10,100)#,1000,10000)
 nst = length(thin_list)
 nChains = 4
 
@@ -1169,155 +1210,4 @@ if(file.exists(filename)){
   }
   dev.off()
 }
-
-
-# 7. MAKE PREDICTIONS  
-#	INPUT. the Fitted models.
-
-#	OUTPUT. Predictions over environmental gradients (for highest RUN of S2) in the file
-# "results/predictions.pdf".
-# SETTING COMMONLY ADJUSTED PARAMETERS TO NULL WHICH CORRESPONDS TO DEFAULT CHOICE (BEGINNING)
-species.list = NULL #one example species shown for each model,
-#selected as prevalence closest to 0.5 (probit models) or most abundant species (other models)
-trait.list = NULL #community weighted mean shown for all traits
-env.list = NULL #predictions constructed over all environmental gradients
-
-# CHANGE DEFAULT OPTIONS BY REMOVING COMMENT AND SETTING VALUE (BEGINNING)
-# NOTE THAT THIS IS THE ONLY SECTION OF THE SCRIPT THAT YOU TYPICALLY NEED TO MODIFY
-
-#use species.list to select which species are used as examples for which predictions are shown
-#species.list should be a list of length the number of models. 
-#for each element provide either 0 (use default) or a vector of species indices
-species.list = list()
-species.list[[1]] = 0
-species.list[[2]] = c(1,2)
-
-#use trait.list to select for which traits predictions for community weighted mean traits are shown
-#trait.list should be a list of length the number of models. 
-#for each element provide either 0 (use default) or a vector of trait indices
-#see models[[j]]$trNames to see which trait each index corresponds to
-trait.list = list()
-trait.list[[1]] = c(2,10)
-trait.list[[2]] = 0
-
-#use env.list to select over which environmental gradients predictions are generated
-#env.list should be a list of length the number of models. 
-#for each element provide either 0 (use default) or a vector of environmental variables
-env.list = list()
-env.list[[1]] = 0
-env.list[[2]] = c("mean_temp","accum_prec")
-##################################################################################################
-# CHANGE DEFAULT OPTIONS BY REMOVING COMMENT AND SETTING VALUE (END)
-# NOTE THAT THIS IS THE ONLY SECTION OF THE SCRIPT THAT YOU TYPICALLY NEED TO MODIFY
-##################################################################################################
-
-
-
-library(Hmsc)
-library(ggplot2)
-
-samples_list = c(5,250,250,250,250)#,250)
-thin_list = c(1,1,10,100,1000)#,10000)
-nst = length(thin_list)
-nChains = 4
-
-for (Lst in nst:4) {
-  thin = thin_list[Lst]
-  samples = samples_list[Lst]
-  filename = file.path(modelDir,paste("S2_fit_models_thin_", as.character(thin),
-                                      "_samples_", as.character(samples),
-                                      "_chains_",as.character(nChains),
-                                      ".Rdata",sep = ""))
-  if(file.exists(filename)){break}
-}
-if(file.exists(filename)){
-  load(filename)
-  nm = length(models)
-  modelnames = names(models)
-  if(is.null(species.list)){
-    species.list = list()
-    for(j in 1:nm) species.list[[j]] = 0
-  }
-  if(is.null(trait.list)){
-    trait.list = list()
-    for(j in 1:nm) trait.list[[j]] = 0
-  }
-  if(is.null(env.list)){
-    env.list = list()
-    for(j in 1:nm) env.list[[j]] = 0
-  }
-  
-  pdf(file= file.path(resultDir,"predictions.pdf"))
-  for(j in 1:nm){
-    m = models[[j]]
-    if(all(env.list[[j]]==0)){
-      if(m$XFormula=="~."){
-        covariates = colnames(m$XData)
-      } else {
-        covariates = all.vars(m$XFormula)
-      }
-    } else {
-      covariates = env.list[[j]]
-    }
-    ex.sp = which.max(colMeans(m$Y,na.rm = TRUE)) #most common species as example species
-    if(m$distr[1,1]==2){
-      ex.sp = which.min(abs(colMeans(m$Y,na.rm = TRUE)-0.5))
-    }
-    if(!all(species.list[[j]])==0){
-      ex.sp = species.list[[j]]
-    }
-    if(length(covariates)>0){
-      for(k in 1:(length(covariates))){
-        covariate = covariates[[k]]
-        Gradient = constructGradient(m,focalVariable = covariate)
-        Gradient2 = constructGradient(m,focalVariable = covariate,non.focalVariables = 1)
-        predY = predict(m, Gradient=Gradient, expected = TRUE)  
-        predY2 = predict(m, Gradient=Gradient2, expected = TRUE)  
-        par(mfrow=c(2,1))
-        pl = plotGradient(m, Gradient, pred=predY, yshow = 0, measure="S", showData = TRUE, 
-                          main = paste0(modelnames[j],": summed response (total effect)"))
-        if(inherits(pl, "ggplot")){
-          print(pl + labs(title=paste0(modelnames[j],": summed response (total effect)")))
-        }
-        pl = plotGradient(m, Gradient2, pred=predY2, yshow = 0, measure="S", showData = TRUE, 
-                          main = paste0(modelnames[j],": summed response (marginal effect)"))
-        if(inherits(pl, "ggplot")){
-          print(pl + labs(title=paste0(modelnames[j],": summed response (marginal effect)")))
-        }
-        for(l in 1:length(ex.sp)){
-          par(mfrow=c(2,1))
-          pl = plotGradient(m, Gradient, pred=predY, yshow = if(m$distr[1,1]==2){c(-0.1,1.1)}else{0}, measure="Y",index=ex.sp[l], showData = TRUE, 
-                            main = paste0(modelnames[j],": example species (total effect)"))
-          if(inherits(pl, "ggplot")){
-            print(pl + labs(title=paste0(modelnames[j],": example species (total effect)")))
-          }
-          pl = plotGradient(m, Gradient2, pred=predY2, yshow = if(m$distr[1,1]==2){c(-0.1,1.1)}else{0}, measure="Y",index=ex.sp[l], showData = TRUE, 
-                            main = paste0(modelnames[j],": example species (marginal effect)"))
-          if(inherits(pl, "ggplot")){
-            print(pl + labs(title=paste0(modelnames[j],": example species (marginal effect)")))
-          }
-        }
-        if(m$nt>1){
-          traitSelection = 2:m$nt
-          if(!all(trait.list[[j]]==0)) traitSelection = trait.list[[j]]
-          for(l in traitSelection){
-            par(mfrow=c(2,1))
-            pl = plotGradient(m, Gradient, pred=predY, measure="T",index=l, showData = TRUE,yshow = 0,
-                              main = paste0(modelnames[j],": community weighted mean trait (total effect)"))
-            if(inherits(pl, "ggplot")){
-              print(pl + labs(title=paste0(modelnames[j],": community weighted mean trait (total effect)")))
-            }
-            pl = plotGradient(m, Gradient2, pred=predY2, measure="T",index=l, showData = TRUE, yshow = 0,
-                              main = paste0(modelnames[j],": community weighted mean trait (marginal effect)"))
-            if(inherits(pl, "ggplot")){
-              print(pl + labs(title=paste0(modelnames[j],": community weighted mean trait (marginal effect)")))
-            }
-          }
-        }
-      }
-    }
-  }
-  dev.off()
-}
-
 
