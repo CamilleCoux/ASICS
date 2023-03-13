@@ -1,0 +1,149 @@
+MCMC Convergennce statistics
+
+
+ker/models/with_traits/S2_fit_models_thin_1_samples_5_chains_4.Rdata
+
+
+presence-absence model
+
+
+beta
+
+Min.   : 1.41  
+1st Qu.: 7.72  
+Median :15.41  
+Mean   :21.15  
+3rd Qu.:33.00  
+Max.   :79.32  
+
+gamma
+
+Min.   :1.108  
+1st Qu.:1.471  
+Median :2.057  
+Mean   :2.824  
+3rd Qu.:3.739  
+Max.   :8.548  
+
+rho
+
+1.061219
+
+omega
+
+
+site
+
+Min.   : 1.337  
+1st Qu.: 4.784  
+Median : 6.168  
+Mean   : 7.324  
+3rd Qu.: 8.901  
+Max.   :19.960  
+
+id
+
+Min.   : 1.550  
+1st Qu.: 5.228  
+Median : 7.503  
+Mean   : 9.094  
+3rd Qu.:10.866  
+Max.   :39.476  
+
+ker/models/with_traits/S2_fit_models_thin_1_samples_250_chains_4.Rdata
+
+
+presence-absence model
+
+
+beta
+
+Min.   : 0.9989  
+1st Qu.: 1.0404  
+Median : 1.2826  
+Mean   : 3.7100  
+3rd Qu.: 4.7249  
+Max.   :23.1919  
+
+gamma
+
+Min.   :1.045  
+1st Qu.:1.101  
+Median :1.178  
+Mean   :1.334  
+3rd Qu.:1.489  
+Max.   :2.658  
+
+rho
+
+1.073236
+
+omega
+
+
+site
+
+Min.   : 2.055  
+1st Qu.: 3.875  
+Median : 5.357  
+Mean   : 5.850  
+3rd Qu.: 7.003  
+Max.   :16.019  
+
+id
+
+Min.   : 1.426  
+1st Qu.: 3.085  
+Median : 4.285  
+Mean   : 4.774  
+3rd Qu.: 5.571  
+Max.   :14.516  
+
+ker/models/with_traits/S2_fit_models_thin_10_samples_250_chains_4.Rdata
+
+
+presence-absence model
+
+
+beta
+
+Min.   :0.9983  
+1st Qu.:1.0033  
+Median :1.0097  
+Mean   :1.0290  
+3rd Qu.:1.0245  
+Max.   :1.4255  
+
+gamma
+
+Min.   :1.000  
+1st Qu.:1.003  
+Median :1.006  
+Mean   :1.006  
+3rd Qu.:1.008  
+Max.   :1.016  
+
+rho
+
+1.003894
+
+omega
+
+
+site
+
+Min.   :1.365  
+1st Qu.:2.342  
+Median :3.070  
+Mean   :3.341  
+3rd Qu.:3.785  
+Max.   :7.575  
+
+id
+
+Min.   :1.213  
+1st Qu.:2.281  
+Median :3.268  
+Mean   :3.734  
+3rd Qu.:4.854  
+Max.   :7.884  

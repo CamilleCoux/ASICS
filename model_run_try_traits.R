@@ -121,9 +121,13 @@ XData <- droplevels(XData)
 
 
 # trim phylo tree again:
-
-phylo_cro <- phylo_cro %>% keep.tip(colnames(Y))
-phylo_ker <- phylo_cro %>% keep.tip(colnames(Y))
+if (crozet){
+  phylo_cro <- phylo_cro %>% keep.tip(colnames(Y))
+  plot(phylo_cro)
+}else{
+  phylo_ker <- phylo_ker %>% keep.tip(colnames(Y))
+  plot(phylo_ker)
+}
 
 # specify  trait data
 TrData = t2 
@@ -150,14 +154,14 @@ TrFormula = ~ height_m + SLA
 if (crozet){
   # PRESENCE-ABSENCE MODEL FOR INDIVIDUAL SPECIES (COMMON ONLY)
   m = Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
-           #TrData = TrData, TrFormula = TrFormula,
-           #phyloTree = phylo_cro,
+           TrData = TrData, TrFormula = TrFormula,
+           phyloTree = phylo_cro,
            distr="probit",
            studyDesign = studyDesign, ranLevels=list(site=rL.site, id=rL.id))
 }else{
   # PRESENCE-ABSENCE MODEL FOR INDIVIDUAL SPECIES (COMMON ONLY)
   m = Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
-           # TrData = TrData, TrFormula = TrFormula,
+          TrData = TrData, TrFormula = TrFormula,
            phyloTree = phylo_ker,
            distr="probit",
            studyDesign = studyDesign, ranLevels=list(site=rL.site, id=rL.id))
@@ -193,8 +197,8 @@ nParallel = NULL #Default: nParallel = nChains
 
 # load(file=file.path(modelDir,"unfitted_models2.RData"))
 nm = length(models)
-samples_list = c(5,250,250,250,250)#,250)
-thin_list = c(1,1,10,100,1000)#,10000)
+samples_list = 250 #c(5,250,250,250,250,250)
+thin_list = 1000 # c(1,1,10,100,1000,10000)
 nChains = 4
 nst = length(thin_list)
 
@@ -526,10 +530,10 @@ library(Hmsc)
 library(colorspace)
 library(vioplot)
 
-samples_list = c(5,250,250,250,250)#,250)
-thin_list = c(1,1,10,100,1000)#,10000)
-nst = length(thin_list)
-nChains = 4
+# samples_list = c(5,250,250,250,250)#,250)
+# thin_list = c(1,1,10,100,1000)#,10000)
+# nst = length(thin_list)
+# nChains = 4
 
 text.file = file.path(resultDir,"/MCMC_convergence.txt")
 cat("MCMC Convergennce statistics\n\n",file=text.file,sep="")
@@ -701,9 +705,9 @@ nParallel = NULL #Default: nParallel = nChains
 if(is.null(nfolds)) nfolds = 2
 
 library(Hmsc)
-samples_list = c(5,250,250,250,250)#,250)
-thin_list = c(1,1,10,100,1000)#,10000)
-nChains = 4
+# samples_list = c(5,250,250,250,250)#,250)
+# thin_list = c(1,1,10,100,1000)#,10000)
+# nChains = 4
 if(is.null(nParallel)) nParallel = nChains
 Lst = 1
 while(Lst <= length(samples_list)){
@@ -771,10 +775,10 @@ if(is.null(nfolds)) nfolds = 2
 
 library(Hmsc)
 
-samples_list = c(5,250,250,250,250)#,250)
-thin_list = c(1,1,10,100,1000)#,10000)
-nst = length(thin_list)
-nChains = 4
+# samples_list = c(5,250,250,250,250)#,250)
+# thin_list = c(1,1,10,100,1000)#,10000)
+# nst = length(thin_list)
+# nChains = 4
 
 for (Lst in nst:1) {
   thin = thin_list[Lst]
@@ -955,10 +959,10 @@ library(colorspace)
 library(corrplot)
 library(writexl)
 
-samples_list = c(5,250,250,250,250)#,250)
-thin_list = c(1,1,10,100,1000)#,10000)
-nst = length(thin_list)
-nChains = 4
+# samples_list = c(5,250,250,250,250)#,250)
+# thin_list = c(1,1,10,100,1000)#,10000)
+# nst = length(thin_list)
+# nChains = 4
 
 text.file = file.path(resultDir,"/parameter_estimates.txt")
 cat(c("This file contains additional information regarding parameter estimates.","\n","\n",sep=""),file=text.file)
@@ -1197,7 +1201,7 @@ species.list[[2]] = c(1,2)
 #for each element provide either 0 (use default) or a vector of trait indices
 #see models[[j]]$trNames to see which trait each index corresponds to
 trait.list = list()
-trait.list[[1]] = c(2,10)
+trait.list[[1]] = c(2,3)
 trait.list[[2]] = 0
 
 #use env.list to select over which environmental gradients predictions are generated
@@ -1215,11 +1219,11 @@ env.list[[2]] = c("mean_temp","accum_prec")
 
 library(Hmsc)
 library(ggplot2)
-
-samples_list = c(5,250,250,250,250)#,250)
-thin_list = c(1,1,10,100,1000)#,10000)
-nst = length(thin_list)
-nChains = 4
+# 
+# samples_list = c(5,250,250,250,250)#,250)
+# thin_list = c(1,1,10,100,1000)#,10000)
+# nst = length(thin_list)
+# nChains = 4
 
 for (Lst in nst:4) {
   thin = thin_list[Lst]

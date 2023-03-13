@@ -42,12 +42,14 @@ t2 %<>%
   group_by( AccSpeciesName, TraitID) %>%
   dplyr::reframe(TraitID = unique(TraitID),
                  Mean = mean(StdValue)) %>%
-  pivot_wider(names_from = TraitID, values_from = Mean)
+  pivot_wider(names_from = TraitID, values_from = Mean) %>%
+  as.data.frame
 colnames(t2) <- c("taxon", "height_m", "SLA")
 
 t2 <- t2[!is.na(rowSums(t2[,c(2, 3)])), ]
 
 plant_sp <- t2$taxon
+rownames(t2) <- t2$taxon
 
 
 # # add sociabilite: nope. Not enough variation. 

@@ -1,0 +1,64 @@
+This file contains additional information regarding parameter estimates. 
+ 
+ 
+ker/models/with_traits/S2_fit_models_thin_10_samples_250_chains_4.Rdata
+
+
+presence-absence model
+
+
+var.part.order.explained
+
+Acaena magellanica
+Azorella selago
+Callitriche antarctica
+Crassula moschata
+Juncus scheuchzerioides
+Leptinella plumosa
+Montia fontana
+Poa cookii
+Pringlea antiscorbutica
+Ranunculus biternatus
+Uncinia compacta
+
+var.part.order.raw
+
+Leptinella plumosa
+Ranunculus biternatus
+Uncinia compacta
+Montia fontana
+Juncus scheuchzerioides
+Pringlea antiscorbutica
+Crassula moschata
+Azorella selago
+Acaena magellanica
+Callitriche antarctica
+Poa cookii
+
+omega.order
+
+Montia fontana
+Callitriche antarctica
+Crassula moschata
+Leptinella plumosa
+Poa cookii
+Pringlea antiscorbutica
+Azorella selago
+Uncinia compacta
+Acaena magellanica
+Juncus scheuchzerioides
+Ranunculus biternatus
+
+omega.order
+
+Uncinia compacta
+Acaena magellanica
+Juncus scheuchzerioides
+Ranunculus biternatus
+Montia fontana
+Callitriche antarctica
+Crassula moschata
+Leptinella plumosa
+Poa cookii
+Pringlea antiscorbutica
+Azorella selago
