@@ -1,0 +1,16 @@
+1. ssh rossinante
+2. For CRO
+  - screen -S cro-docker
+  - docker run -it --cpus="10.0" --cpuset-cpus="10-19" --rm -v /media/sancho/ccoux/data:/home/rstudio/data -v /media/sancho/ccoux/ASICS_code:/home/rstudio/code --name cro-docker asics
+  - crozet = TRUE
+  - setwd("code/")
+  - source("...")
+  - CTRL + A + D
+3. For KER
+  - screen -S ker-docker
+  - docker run -it --cpus="10.0" --cpuset-cpus="20-29" --rm -v /media/sancho/ccoux/data:/home/rstudio/data -v /media/sancho/ccoux/ASICS_code:/home/rstudio/code --name ker-docker asics
+  - crozet = FALSE
+  - setwd("code/")
+  - source("...")
+  - CTRL + A + D
+4. exit

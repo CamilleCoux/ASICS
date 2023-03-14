@@ -14,10 +14,7 @@ library(tidyverse)
 library(sf)
 library(ggplot2)
 library(stringr)
-library(rnaturalearth)
-library(rnaturalearthdata)
-library(osmdata)
-library(ggmap)
+
 
 theme_set(theme_bw())
 
