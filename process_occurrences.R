@@ -16,6 +16,7 @@ library(ggplot2)
 library(stringr)
 
 
+
 theme_set(theme_bw())
 
 d <- readr::read_delim("../data/David_plantes_KerCro/202209_TAAF_HFI_plants_data_complete_UTF8.csv",  
