@@ -1,0 +1,247 @@
+MCMC Convergennce statistics
+
+
+C:/Users/coux/Documents/ASICS/ASICS_code/ker/models/S2_fit_models_thin_1_samples_5_chains_4.Rdata
+
+
+presence-absence model
+
+
+beta
+
+Min.   : 0.9545  
+1st Qu.: 1.4086  
+Median : 1.9910  
+Mean   : 3.2521  
+3rd Qu.: 3.6470  
+Max.   :24.4783  
+
+gamma
+
+Min.   :1.091  
+1st Qu.:1.295  
+Median :1.514  
+Mean   :1.567  
+3rd Qu.:1.745  
+Max.   :2.357  
+
+rho
+
+2.572888
+
+omega
+
+
+site
+
+Min.   : 1.027  
+1st Qu.: 1.988  
+Median : 2.515  
+Mean   : 3.365  
+3rd Qu.: 3.942  
+Max.   :16.773  
+
+id
+
+Min.   : 1.142  
+1st Qu.: 2.727  
+Median : 3.760  
+Mean   : 5.434  
+3rd Qu.: 6.418  
+Max.   :29.611  
+
+C:/Users/coux/Documents/ASICS/ASICS_code/ker/models/S2_fit_models_thin_1_samples_250_chains_4.Rdata
+
+
+presence-absence model
+
+
+beta
+
+Min.   :1.001  
+1st Qu.:1.016  
+Median :1.034  
+Mean   :1.060  
+3rd Qu.:1.068  
+Max.   :1.586  
+
+gamma
+
+Min.   :0.9993  
+1st Qu.:1.0050  
+Median :1.0069  
+Mean   :1.0072  
+3rd Qu.:1.0102  
+Max.   :1.0134  
+
+rho
+
+1.036109
+
+omega
+
+
+site
+
+Min.   : 1.305  
+1st Qu.: 3.130  
+Median : 4.881  
+Mean   : 4.835  
+3rd Qu.: 5.906  
+Max.   :11.653  
+
+id
+
+Min.   : 1.393  
+1st Qu.: 3.395  
+Median : 5.015  
+Mean   : 5.198  
+3rd Qu.: 6.515  
+Max.   :11.381  
+
+C:/Users/coux/Documents/ASICS/ASICS_code/ker/models/S2_fit_models_thin_10_samples_250_chains_4.Rdata
+
+
+presence-absence model
+
+
+beta
+
+Min.   :0.998  
+1st Qu.:1.001  
+Median :1.005  
+Mean   :1.014  
+3rd Qu.:1.011  
+Max.   :1.221  
+
+gamma
+
+Min.   :0.9998  
+1st Qu.:1.0011  
+Median :1.0027  
+Mean   :1.0033  
+3rd Qu.:1.0050  
+Max.   :1.0084  
+
+rho
+
+1.003279
+
+omega
+
+
+site
+
+Min.   :1.061  
+1st Qu.:1.371  
+Median :1.936  
+Mean   :2.098  
+3rd Qu.:2.681  
+Max.   :4.478  
+
+id
+
+Min.   :1.091  
+1st Qu.:1.625  
+Median :2.209  
+Mean   :2.174  
+3rd Qu.:2.610  
+Max.   :4.126  
+
+C:/Users/coux/Documents/ASICS/ASICS_code/ker/models/S2_fit_models_thin_100_samples_250_chains_4.Rdata
+
+
+presence-absence model
+
+
+beta
+
+Min.   :0.9977  
+1st Qu.:1.0007  
+Median :1.0037  
+Mean   :1.0076  
+3rd Qu.:1.0076  
+Max.   :1.1541  
+
+gamma
+
+Min.   :0.9992  
+1st Qu.:1.0015  
+Median :1.0046  
+Mean   :1.0040  
+3rd Qu.:1.0059  
+Max.   :1.0094  
+
+rho
+
+1.003596
+
+omega
+
+
+site
+
+Min.   :1.118  
+1st Qu.:2.550  
+Median :3.388  
+Mean   :3.788  
+3rd Qu.:4.902  
+Max.   :8.728  
+
+id
+
+Min.   :1.096  
+1st Qu.:2.264  
+Median :3.132  
+Mean   :3.166  
+3rd Qu.:4.005  
+Max.   :6.081  
+
+C:/Users/coux/Documents/ASICS/ASICS_code/ker/models/S2_fit_models_thin_1000_samples_250_chains_4.Rdata
+
+
+presence-absence model
+
+
+beta
+
+Min.   :0.9977  
+1st Qu.:1.0003  
+Median :1.0021  
+Mean   :1.0036  
+3rd Qu.:1.0062  
+Max.   :1.0308  
+
+gamma
+
+Min.   :0.9998  
+1st Qu.:1.0021  
+Median :1.0045  
+Mean   :1.0048  
+3rd Qu.:1.0065  
+Max.   :1.0131  
+
+rho
+
+1.016056
+
+omega
+
+
+site
+
+Min.   :1.044  
+1st Qu.:1.939  
+Median :2.494  
+Mean   :2.827  
+3rd Qu.:3.613  
+Max.   :6.220  
+
+id
+
+Min.   :1.184  
+1st Qu.:2.002  
+Median :2.856  
+Mean   :3.011  
+3rd Qu.:3.787  
+Max.   :6.404  

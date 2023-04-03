@@ -1,0 +1,51 @@
+MCMC Convergennce statistics
+
+
+ker/models/with_traits/S2_fit_models_thin_1000_samples_250_chains_4.Rdata
+
+
+presence-absence model
+
+
+beta
+
+Min.   :0.9979  
+1st Qu.:1.0042  
+Median :1.0116  
+Mean   :1.0376  
+3rd Qu.:1.0358  
+Max.   :1.4330  
+
+gamma
+
+Min.   :0.9985  
+1st Qu.:1.0012  
+Median :1.0072  
+Mean   :1.0089  
+3rd Qu.:1.0121  
+Max.   :1.0374  
+
+rho
+
+1.013183
+
+omega
+
+
+site
+
+Min.   :1.098  
+1st Qu.:1.679  
+Median :2.007  
+Mean   :2.224  
+3rd Qu.:2.544  
+Max.   :5.138  
+
+id
+
+Min.   :1.159  
+1st Qu.:1.635  
+Median :2.066  
+Mean   :2.252  
+3rd Qu.:2.653  
+Max.   :4.599  

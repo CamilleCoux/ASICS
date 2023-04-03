@@ -1,0 +1,198 @@
+MCMC Convergennce statistics
+
+
+cro/models/equalbranchlengths/S2_fit_models_thin_1_samples_5_chains_4.Rdata
+
+
+presence-absence model
+
+
+beta
+
+Min.   : 0.9736  
+1st Qu.: 1.5886  
+Median : 2.5891  
+Mean   : 3.9926  
+3rd Qu.: 4.8344  
+Max.   :22.9342  
+
+gamma
+
+Min.   :0.9299  
+1st Qu.:1.4444  
+Median :2.0808  
+Mean   :1.9124  
+3rd Qu.:2.3486  
+Max.   :2.6420  
+
+rho
+
+3.914814
+
+omega
+
+
+site
+
+Min.   : 1.309  
+1st Qu.: 3.453  
+Median : 5.054  
+Mean   : 5.438  
+3rd Qu.: 7.330  
+Max.   :14.267  
+
+id
+
+Min.   : 1.010  
+1st Qu.: 2.726  
+Median : 3.610  
+Mean   : 4.494  
+3rd Qu.: 4.859  
+Max.   :28.074  
+
+cro/models/equalbranchlengths/S2_fit_models_thin_1_samples_250_chains_4.Rdata
+
+
+presence-absence model
+
+
+beta
+
+Min.   :0.9997  
+1st Qu.:1.0115  
+Median :1.0273  
+Mean   :1.0552  
+3rd Qu.:1.0479  
+Max.   :2.2203  
+
+gamma
+
+Min.   :1.000  
+1st Qu.:1.002  
+Median :1.003  
+Mean   :1.007  
+3rd Qu.:1.004  
+Max.   :1.048  
+
+rho
+
+1.093268
+
+omega
+
+
+site
+
+Min.   :1.428  
+1st Qu.:2.666  
+Median :4.083  
+Mean   :4.392  
+3rd Qu.:5.915  
+Max.   :9.144  
+
+id
+
+Min.   : 1.185  
+1st Qu.: 2.510  
+Median : 3.615  
+Mean   : 4.200  
+3rd Qu.: 5.381  
+Max.   :11.581  
+
+cro/models/equalbranchlengths/S2_fit_models_thin_10_samples_250_chains_4.Rdata
+
+
+presence-absence model
+
+
+beta
+
+Min.   :0.9977  
+1st Qu.:1.0013  
+Median :1.0041  
+Mean   :1.0088  
+3rd Qu.:1.0098  
+Max.   :1.1098  
+
+gamma
+
+Min.   :0.9995  
+1st Qu.:1.0004  
+Median :1.0015  
+Mean   :1.0038  
+3rd Qu.:1.0037  
+Max.   :1.0196  
+
+rho
+
+1.00227
+
+omega
+
+
+site
+
+Min.   : 1.361  
+1st Qu.: 2.642  
+Median : 3.628  
+Mean   : 4.093  
+3rd Qu.: 4.946  
+Max.   :10.789  
+
+id
+
+Min.   :1.223  
+1st Qu.:2.716  
+Median :4.100  
+Mean   :4.351  
+3rd Qu.:5.619  
+Max.   :9.246  
+
+cro/models/equalbranchlengths/S2_fit_models_thin_100_samples_250_chains_4.Rdata
+
+
+presence-absence model
+
+
+beta
+
+Min.   :0.9977  
+1st Qu.:1.0005  
+Median :1.0027  
+Mean   :1.0047  
+3rd Qu.:1.0061  
+Max.   :1.0739  
+
+gamma
+
+Min.   :1.000  
+1st Qu.:1.001  
+Median :1.002  
+Mean   :1.002  
+3rd Qu.:1.003  
+Max.   :1.005  
+
+rho
+
+1.003236
+
+omega
+
+
+site
+
+Min.   :1.049  
+1st Qu.:1.597  
+Median :2.359  
+Mean   :2.658  
+3rd Qu.:3.677  
+Max.   :6.128  
+
+id
+
+Min.   :1.075  
+1st Qu.:1.672  
+Median :2.448  
+Mean   :2.605  
+3rd Qu.:3.439  
+Max.   :5.494  
