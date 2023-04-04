@@ -1,0 +1,170 @@
+---
+title: "Run HMSC for plants with traits"
+output: word_document
+date: "2023-04-03"
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Model inputs :
+
+```{r, echo=FALSE}
+library(magrittr)
+library(Hmsc)
+library(ggplot2)
+
+load("../ASICS_code/cro/models/with_traits_and_phylo/S2_fit_models_thin_1000_samples_250_chains_4.Rdata")
+models_cro <- models
+Y_cro <- models_cro$`presence-absence model`$Y %>% head
+XData_cro <- models_cro$`presence-absence model`$XData
+XFormula_cro <- models_cro$`presence-absence model`$XFormula
+TrData_cro <- models_cro$`presence-absence model`$TrData
+TrFormula_cro <- models_cro$`presence-absence model`$TrFormula
+phyloTree_cro <- models_cro$`presence-absence model`$phyloTree
+
+
+load("../ASICS_code/ker/models/with_traits/S2_fit_models_thin_1000_samples_250_chains_4.Rdata")
+models_ker <- models
+Y_ker <- models_ker$`presence-absence model`$Y %>% head
+XData_ker <- models_ker$`presence-absence model`$XData
+XFormula_ker <- models_ker$`presence-absence model`$XFormula
+TrData_ker <- models_ker$`presence-absence model`$TrData
+TrFormula_ker <- models_ker$`presence-absence model`$TrFormula
+phyloTree_ker <- models_ker$`presence-absence model`$phyloTree
+
+```
+
+
+# Crozet
+```{r}
+colnames(Y_cro)
+TrData_cro
+ape::plot.phylo(phyloTree_cro)
+
+```
+
+
+# Kerguelen
+```{r}
+colnames(Y_ker)
+TrData_ker
+ape::plot.phylo(phyloTree_ker)
+
+```
+
+```{r, eval=FALSE}
+# model structure:
+m = Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
+         TrData = TrData, TrFormula = TrFormula,
+         phyloTree = phylo_cro,
+         distr="probit",
+         studyDesign = studyDesign, ranLevels=list(site=rL.site, id=rL.id))
+
+```
+
+
+Variance partition for Crozet
+```{r, echo=FALSE}
+
+# fetch data stored in models
+m  <- models_cro[[1]]
+covariates = attr(terms(m$XFormula),"term.labels")
+# 1940 sites * 11 species * 1000 samples
+preds = computePredictedValues(m)
+VP = computeVariancePartitioning(m)
+vals = VP$vals
+mycols = viridis::viridis(nrow(VP$vals))
+MF = evaluateModelFit(hM=m, predY=preds)
+R2 = NULL
+
+# plot settings      
+theme_set(theme_bw())
+
+# ggplot format
+varpart <- VP$vals %>%
+  as.data.frame 
+varpart$covariates <- rownames(varpart)
+varpart %<>% 
+  tidyr::pivot_longer(!covariates, names_to = "species", values_to = "var_partition")
+varpart$covariates <- factor(varpart$covariates, 
+                             levels = rev(c("mean_temp","accum_prec","pente",
+                                            "exposition","Random: site" ,"Random: id")))
+
+# plot variance partitioning for Crozet
+varpart %>%
+  ggplot(aes(fill=covariates, y = var_partition, x= species)) + 
+  geom_bar(position = "stack", stat="identity") +
+  viridis::scale_fill_viridis(discrete=T) + 
+  ggtitle("Crozet") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+```
+
+
+Variance partition for Kerguelen
+```{r, echo=FALSE}
+
+# fetch data stored in models
+m  <- models_ker[[1]]
+covariates = attr(terms(m$XFormula),"term.labels")
+# 1940 sites * 11 species * 1000 samples
+preds = computePredictedValues(m)
+VP = computeVariancePartitioning(m)
+vals = VP$vals
+mycols = viridis::viridis(nrow(VP$vals))
+MF = evaluateModelFit(hM=m, predY=preds)
+R2 = NULL
+
+# plot settings      
+theme_set(theme_bw())
+
+# ggplot format
+varpart <- VP$vals %>%
+  as.data.frame 
+varpart$covariates <- rownames(varpart)
+varpart %<>% 
+  tidyr::pivot_longer(!covariates, names_to = "species", values_to = "var_partition")
+varpart$covariates <- factor(varpart$covariates, 
+                             levels = rev(c("mean_temp","accum_prec","pente",
+                                            "exposition","Random: site" ,"Random: id")))
+
+# plot variance partitioning for Crozet
+varpart %>%
+  ggplot(aes(fill=covariates, y = var_partition, x= species)) + 
+  geom_bar(position = "stack", stat="identity") +
+  viridis::scale_fill_viridis(discrete=T) + 
+  ggtitle("Kerguelen") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+```
+
+
+```{r}
+# Crozet
+m <- models_cro[[1]]
+postBeta = getPostEstimate(m, parName="Beta")
+
+plotBeta(m, post=postBeta, supportLevel = support.level.beta, param="Sign",
+               plotTree = TRUE,
+               covNamesNumbers = c(TRUE,FALSE),
+               spNamesNumbers=c(c.show.sp.names,FALSE),
+               cex=c(0.6,0.6,0.8))
+mpost = convertToCodaObject(m)
+        rhovals = unlist(poolMcmcChains(mpost$Rho))
+        mymain = paste0("BetaPlot Crozet, E[rho] = ",round(mean(rhovals),2),", Pr[rho>0] = ",round(mean(rhovals>0),2))
+
+```
+
+
+Make map of Crozet based on beta predicted values
+
+```{r}
+crozet = TRUE
+source("../ASICS_code/process_occurrences.R")
+pred_cro <- predict(models_cro[[1]])
+map_cro <- cbind(env_vars[models_cro[[1]]$XData$id, ], pred_cro)
+```
+
