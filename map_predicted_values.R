@@ -31,7 +31,7 @@ mymain = paste0("BetaPlot Crozet, E[rho] = ",round(mean(rhovals),2),", Pr[rho>0]
 # Make map of Crozet based on beta predicted values
 
 crozet = TRUE
-cro <- st_read("../data/SIG/Contours/CRO_contours.shp")
+cro <- sf::st_read("../data/SIG/Contours/CRO_contours.shp")
 
 source("../ASICS_code/process_occurrences.R")
 pred_cro <- predict(m)
