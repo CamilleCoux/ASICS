@@ -1,5 +1,4 @@
 
-
 theme_set(theme_bw())
 
 d <- readr::read_delim("../data/David_plantes_KerCro/202209_TAAF_HFI_plants_data_complete_UTF8.csv",  
@@ -7,7 +6,7 @@ d <- readr::read_delim("../data/David_plantes_KerCro/202209_TAAF_HFI_plants_data
 
 # add index:
 d %<>% 
-  add_column(id = 1:nrow(d), .after=0)
+  tibble::add_column(id = 1:nrow(d), .after=0)
 # head(d)
 # separate date component in different columns:
 d[c("jour", "mois", "annee")] <- str_split_fixed(d$date_observation, "/", 3)

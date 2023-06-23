@@ -6,11 +6,13 @@
 # crozet = TRUE
 
 set.seed(1)
-
-
+library(tidyverse)
+library(ggplot2)
+library(readr)
 library(Hmsc)
 library(ape) 
 library(viridis)
+library(magrittr)
 
 
 # SET DIRECTORIES 
@@ -82,6 +84,19 @@ ggplot(data=XData, aes(x=accum_prec, group=exposition, fill=exposition)) +
   scale_color_viridis(discrete=T) 
 #p2
 
+
+# explore the extra variables and check for correlations
+XData |> 
+  dplyr::select(exposition, NDVI, waterways_dist, sea_dist, pente, insolation, accum_prec_Manu, accum_prec) |>
+  summary()
+
+
+GGally::ggpairs(XData %>% dplyr::select(exposition, NDVI, waterways_dist, sea_dist, pente, insolation, accum_prec_Manu, accum_prec))
+
+
+pairs(XData %>% dplyr::select(accum_prec_Manu, accum_prec, dry_month_prec, wet_month_prec))
+
+pairs(XData %>% dplyr::select(min_temp, min_temp_Manu, max_temp, max_temp_Manu, mean_temp, mean_temp_Manu))
 
 # READ AND MODIFY PHYLO DATA 
 ################################################################################
