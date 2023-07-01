@@ -40,6 +40,7 @@ if(crozet){
   env_vars <- cro_nats %>%
     dplyr::select(numero_observation, latitude, longitude, jour, mois, annee, date_observation, pente, exposition) %>%
     unique %>%
+    dplyr::filter(!numero_observation %in% dup) %>%
     st_as_sf(coords = c("longitude", "latitude" ), crs=st_crs(bio1_cro))
   
   # extraction of my downscaled temperatures, followed by Manuele's

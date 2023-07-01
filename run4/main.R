@@ -19,7 +19,7 @@ library(magrittr)
 if (crozet){
   localDir = "cro"
   if(!dir.exists(localDir)) dir.create(localDir)
-  modelDir = file.path(localDir, "models/run_4/")
+  modelDir = file.path(localDir, "models/run_4")
   if(!dir.exists(modelDir)) dir.create(modelDir)
 }else{
   localDir = "ker"
@@ -61,7 +61,7 @@ XData = env_vars |>
 
 # remove Nas from XData
 XData <- na.omit(XData)
-
+keep_nums <- XData$numero_observation
 
 str(XData)
 XData$numero_observation %<>% as.factor
@@ -78,25 +78,25 @@ XData$id <- 1:nrow(XData) |> as.factor()
 
 
 # to check correlation of precipitation and exposition # what is AA in expo ??
-ggplot(data=XData, aes(x=accum_prec, group=exposition, fill=exposition)) +
-  geom_density(adjust=1.5, alpha=.4) +
-  scale_fill_viridis(discrete=T) +
-  scale_color_viridis(discrete=T) 
+# ggplot(data=XData, aes(x=accum_prec, group=exposition, fill=exposition)) +
+#   geom_density(adjust=1.5, alpha=.4) +
+#   scale_fill_viridis(discrete=T) +
+#   scale_color_viridis(discrete=T) 
 #p2
 
 
-# explore the extra variables and check for correlations
-XData |> 
-  dplyr::select(exposition, NDVI, waterways_dist, sea_dist, pente, insolation, accum_prec_Manu, accum_prec) |>
-  summary()
-
-
-GGally::ggpairs(XData %>% dplyr::select(exposition, NDVI, waterways_dist, sea_dist, pente, insolation, accum_prec_Manu, accum_prec))
-
-
-pairs(XData %>% dplyr::select(accum_prec_Manu, accum_prec, dry_month_prec, wet_month_prec))
-
-pairs(XData %>% dplyr::select(min_temp, min_temp_Manu, max_temp, max_temp_Manu, mean_temp, mean_temp_Manu))
+# # explore the extra variables and check for correlations
+# XData |> 
+#   dplyr::select(exposition, NDVI, waterways_dist, sea_dist, pente, insolation, accum_prec_Manu, accum_prec) |>
+#   summary()
+# 
+# 
+# GGally::ggpairs(XData %>% dplyr::select(exposition, NDVI, waterways_dist, sea_dist, pente, insolation, accum_prec_Manu, accum_prec))
+# 
+# 
+# pairs(XData %>% dplyr::select(accum_prec_Manu, accum_prec, dry_month_prec, wet_month_prec))
+# 
+# pairs(XData %>% dplyr::select(min_temp, min_temp_Manu, max_temp, max_temp_Manu, mean_temp, mean_temp_Manu))
 
 # READ AND MODIFY PHYLO DATA 
 ################################################################################
@@ -127,7 +127,7 @@ source("process_traits.R")
 dim(t2)
 
 # keep only those species in the community mat, the phylo_mat and the env_vars 
-Y = Y[,plant_sp]
+Y = Y[rownames(Y) %in% keep_nums,plant_sp]
 # check prevalence : keep only common species
 prev = colSums(Y)
 sum(prev>=20) # all good
@@ -138,6 +138,9 @@ Y <- Y[-empty,]
 
 XData <- XData[-which(XData$numero_observation %in% names(empty)), ] 
 XData <- droplevels(XData)
+
+keep_nums <- XData$numero_observation
+cro_sites_xy <- cro_sites_xy[which(cro_sites_xy$numero_observation %in% keep_nums),]
 
 
 # trim phylo tree again:
@@ -164,7 +167,7 @@ rL.site = HmscRandomLevel(units = levels(studyDesign$site))
 # and optionally id, if we are interested in species associations at that level
 rL.id = HmscRandomLevel(units = levels(studyDesign$id))
 # REGRESSION MODEL FOR ENVIRONMENTAL COVARIATES.
-XFormula = ~ mean_temp + accum_prec + pente + exposition
+XFormula = ~ mean_temp_Manu + accum_prec_Manu + NDVI + waterways_dist + sea_dist + insolation
 # REGRESSION MODEL FOR TRAITS
 TrFormula = ~ height_m + SLA
 # CONSTRUCT TAXONOMICAL TREE TO BE USED AS PROXY FOR PHYLOGENETIC TREE
@@ -172,19 +175,62 @@ TrFormula = ~ height_m + SLA
 
 # CONSTRUCT THE MODELS.
 if (crozet){
+  
+  # simple model : no species associations
+  studyDesign = data.frame(site=XData$numero_observation)
+  m_simple = Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
+                  TrData = TrData, TrFormula = TrFormula,
+                  phyloTree = phylo_cro,
+                  distr="probit",
+                  studyDesign = studyDesign, 
+                  ranLevels=list(site=rL.site))
+  
+  
   # PRESENCE-ABSENCE MODEL FOR INDIVIDUAL SPECIES (COMMON ONLY)
-  m = Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
+ 
+  studyDesign = data.frame(site=XData$numero_observation, id=XData$id)
+  rL.site = HmscRandomLevel(units = levels(studyDesign$site))
+  rL.id = HmscRandomLevel(units = levels(studyDesign$id))
+  
+  m_site_id = Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
            TrData = TrData, TrFormula = TrFormula,
            phyloTree = phylo_cro,
            distr="probit",
            studyDesign = studyDesign, ranLevels=list(site=rL.site, id=rL.id))
+  
+  
+  # small spatial model:
+  studyDesign = data.frame(id=XData$id)
+  rL.spatial = HmscRandomLevel(sData = cro_sites_xy[, 2:3])
+  rL.spatial = setPriors(rL.spatial,nfMin=1,nfMax=1)
+  m_spatial_small = Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
+                   TrData = TrData, TrFormula = TrFormula,
+                   phyloTree = phylo_cro,
+                   distr="probit",
+                   studyDesign = studyDesign, 
+                   ranLevels=list("id" = rL.spatial))
+
+    # FULL SPATIAL MODEL : added a site random factor
+  studyDesign = data.frame(site=XData$numero_observation, id=XData$id, space = as.factor(1:nrow(XData)))
+  rL.spatial = HmscRandomLevel(sData = cro_sites_xy[, 2:3])
+  rL.spatial = setPriors(rL.spatial,nfMin=1,nfMax=1)
+  m_spatial_site = Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
+           TrData = TrData, TrFormula = TrFormula,
+           phyloTree = phylo_cro,
+           distr="probit",
+           studyDesign = studyDesign, 
+           ranLevels=list(site=rL.site, space = rL.spatial))
+
+  
+  
+  
 }else{
   # PRESENCE-ABSENCE MODEL FOR INDIVIDUAL SPECIES (COMMON ONLY)
   m = Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
            TrData = TrData, TrFormula = TrFormula,
            phyloTree = phylo_ker,
            distr="probit",
-           studyDesign = studyDesign, ranLevels=list(site=rL.site, id=rL.id))
+           studyDesign = studyDesign, ranLevels=list(site=rL.site, id=rL.id, route = sData))
 }
 
 
@@ -192,7 +238,7 @@ if (crozet){
 
 # COMBINING AND SAVING MODELS 
 ################################################################################
-models = list(m)
+models = list(m_simple, m_site_id, m_spatial_small, m_spatial_site)
 names(models) = c("presence-absence model")
 save(models, file = file.path(modelDir, "unfitted_models.RData"))
 
@@ -217,8 +263,8 @@ nParallel = NULL #Default: nParallel = nChains
 
 # load(file=file.path(modelDir,"unfitted_models2.RData"))
 nm = length(models)
-samples_list = 250 #c(5,250,250,250,250,250)
-thin_list = 1000 # c(1,1,10,100,1000,10000)
+samples_list = c(5,250,250)#,250)#,250,250)
+thin_list = c(1,1,10)#,100)# ,1000,10000)
 nChains = 4
 nst = length(thin_list)
 
@@ -269,7 +315,7 @@ show.sp.names.omega = NULL #Default: species names shown in beta plot if there a
 
 
 # SET DIRECTORIES (BEGINNING)
-resultDir = file.path(localDir, "results/with_traits")
+resultDir = file.path(localDir, "results/run4")
 if (!dir.exists(resultDir)) dir.create(resultDir)
 
 

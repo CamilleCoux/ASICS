@@ -158,8 +158,35 @@ ker_sites_xy <- ker_nats %>%
   unique
 
 
+# there are duplicates in the site coordinates for Crozet
+dup <- cro_sites_xy[, 2:3] %>% duplicated() %>% which()
+dup <- cro_sites_xy$numero_observation[dup]
+
+cro_sites_xy <- cro_sites_xy[-which(cro_sites_xy$numero_observation %in% dup),]
+
+cro_com_mat <- cro_com_mat[-which(rownames(cro_com_mat) %in% dup),]
+
+# Just checking whether these duplicates are from different sampling dates: NO.
+# Find duplicate XY coordinates
+duplicate_coords <- cro_sites_xy[duplicated(cro_sites_xy[, c("latitude", "longitude")]) | 
+                         duplicated(cro_sites_xy[, c("latitude", "longitude")],
+                                    fromLast = TRUE), ]
+
+# Create a list of duplicate XY coordinates
+duplicate_list <- split(duplicate_coords$numero_observation, 
+                        paste(duplicate_coords$latitude, 
+                              duplicate_coords$longitude, 
+                              sep = "_"))
+
+duplicate_list %>% lapply(., length)
+
+dupo <- d %>%
+  dplyr::select(numero_observation, date_observation) %>%
+  dplyr::filter(numero_observation %in% duplicate_coords$numero_observation) %>%
+  unique
+
 
 # clean workspace
-rm(d, nats, nats2, cells, i)
+rm(d, nats, nats2, cells, i, dupo, duplicate_coords, duplicate_list)
 
 

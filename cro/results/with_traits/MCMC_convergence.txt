@@ -1,0 +1,149 @@
+MCMC Convergennce statistics
+
+
+cro/models/run_4/S2_fit_models_thin_1_samples_5_chains_4.Rdata
+
+
+
+
+
+beta
+
+Min.   : 1.630  
+1st Qu.: 4.228  
+Median :10.240  
+Mean   :21.398  
+3rd Qu.:31.555  
+Max.   :95.648  
+
+gamma
+
+Min.   :1.055  
+1st Qu.:1.259  
+Median :1.591  
+Mean   :2.096  
+3rd Qu.:2.126  
+Max.   :6.223  
+
+rho
+
+0.9567872
+
+omega
+
+
+site
+
+Min.   : 2.975  
+1st Qu.: 6.544  
+Median : 8.472  
+Mean   :11.536  
+3rd Qu.:13.178  
+Max.   :43.512  
+
+id
+
+Min.   : 2.002  
+1st Qu.: 8.026  
+Median :11.960  
+Mean   :14.998  
+3rd Qu.:20.145  
+Max.   :41.716  
+
+cro/models/run_4/S2_fit_models_thin_1_samples_250_chains_4.Rdata
+
+
+
+
+
+beta
+
+Min.   : 1.012  
+1st Qu.: 1.067  
+Median : 1.229  
+Mean   : 8.679  
+3rd Qu.:12.155  
+Max.   :74.844  
+
+gamma
+
+Min.   :1.056  
+1st Qu.:1.180  
+Median :1.433  
+Mean   :1.482  
+3rd Qu.:1.729  
+Max.   :2.207  
+
+rho
+
+1.011057
+
+omega
+
+
+site
+
+Min.   : 1.229  
+1st Qu.: 3.903  
+Median : 5.484  
+Mean   : 5.997  
+3rd Qu.: 7.282  
+Max.   :19.435  
+
+id
+
+Min.   : 2.150  
+1st Qu.: 4.554  
+Median : 5.663  
+Mean   : 6.081  
+3rd Qu.: 7.498  
+Max.   :14.843  
+
+cro/models/run_4/S2_fit_models_thin_10_samples_250_chains_4.Rdata
+
+
+
+
+
+beta
+
+Min.   : 0.9987  
+1st Qu.: 1.0420  
+Median : 1.1406  
+Mean   : 2.4347  
+3rd Qu.: 1.3878  
+Max.   :22.8341  
+
+gamma
+
+Min.   :1.000  
+1st Qu.:1.003  
+Median :1.009  
+Mean   :1.017  
+3rd Qu.:1.024  
+Max.   :1.070  
+
+rho
+
+0.9996227
+
+omega
+
+
+site
+
+Min.   :1.340  
+1st Qu.:2.626  
+Median :3.481  
+Mean   :3.653  
+3rd Qu.:4.727  
+Max.   :7.335  
+
+id
+
+Min.   :1.489  
+1st Qu.:2.963  
+Median :3.903  
+Mean   :4.250  
+3rd Qu.:5.248  
+Max.   :8.805  
