@@ -1,0 +1,26 @@
+This file contains additional information regarding parameter estimates. 
+ 
+ 
+cro/models/run_4/simple_model_thin_1_samples_250_chains_4.Rdata
+
+
+simple_model
+
+
+cro/models/run_4/simple_model_thin_1_samples_5_chains_4.Rdata
+
+
+simple_model
+
+
+cro/models/run_4/simple_model_thin_1_samples_5_chains_4.Rdata
+
+
+simple_model
+
+
+cro/models/run_4/simple_model_thin_1_samples_5_chains_4.Rdata
+
+
+simple_model
+

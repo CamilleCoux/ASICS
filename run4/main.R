@@ -200,7 +200,7 @@ if (crozet){
   
   
   # small spatial model:
-  studyDesign = data.frame(id=XData$id)
+  studyDesign = data.frame(id=XData$id, space = as.factor(1:nrow(XData)))
   rL.spatial = HmscRandomLevel(sData = cro_sites_xy[, 2:3])
   rL.spatial = setPriors(rL.spatial,nfMin=1,nfMax=1)
   m_spatial_small = Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
@@ -208,7 +208,7 @@ if (crozet){
                    phyloTree = phylo_cro,
                    distr="probit",
                    studyDesign = studyDesign, 
-                   ranLevels=list("id" = rL.spatial))
+                   ranLevels=list("space" = rL.spatial))
 
     # FULL SPATIAL MODEL : added a site random factor
   studyDesign = data.frame(site=XData$numero_observation, id=XData$id, space = as.factor(1:nrow(XData)))
@@ -239,10 +239,13 @@ if (crozet){
 # COMBINING AND SAVING MODELS 
 ################################################################################
 models = list(m_simple, m_site_id, m_spatial_small, m_spatial_site)
-names(models) = c("presence-absence model")
+names(models) = c("m_simple", "m_site_id", "m_spatial_small", "m_spatial_site")
 save(models, file = file.path(modelDir, "unfitted_models.RData"))
 
 
+if (crozet ==TRUE){
+  load("cro/models/run_4/unfitted_models.RData")
+}
 
 # TESTING THAT MODELS FIT WITHOUT ERRORS 
 ##################################################################################################
