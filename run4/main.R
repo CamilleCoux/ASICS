@@ -78,25 +78,25 @@ XData$id <- 1:nrow(XData) |> as.factor()
 
 
 # to check correlation of precipitation and exposition # what is AA in expo ??
-# ggplot(data=XData, aes(x=accum_prec, group=exposition, fill=exposition)) +
-#   geom_density(adjust=1.5, alpha=.4) +
-#   scale_fill_viridis(discrete=T) +
-#   scale_color_viridis(discrete=T) 
-#p2
+ggplot(data=XData, aes(x=accum_prec, group=exposition, fill=exposition)) +
+  geom_density(adjust=1.5, alpha=.4) +
+  scale_fill_viridis(discrete=T) +
+  scale_color_viridis(discrete=T)
+p2
 
 
-# # explore the extra variables and check for correlations
-# XData |> 
-#   dplyr::select(exposition, NDVI, waterways_dist, sea_dist, pente, insolation, accum_prec_Manu, accum_prec) |>
-#   summary()
-# 
-# 
-# GGally::ggpairs(XData %>% dplyr::select(exposition, NDVI, waterways_dist, sea_dist, pente, insolation, accum_prec_Manu, accum_prec))
-# 
-# 
-# pairs(XData %>% dplyr::select(accum_prec_Manu, accum_prec, dry_month_prec, wet_month_prec))
-# 
-# pairs(XData %>% dplyr::select(min_temp, min_temp_Manu, max_temp, max_temp_Manu, mean_temp, mean_temp_Manu))
+# explore the extra variables and check for correlations
+XData |>
+  dplyr::select(exposition, NDVI, waterways_dist, sea_dist, pente, insolation, accum_prec_Manu, accum_prec) |>
+  summary()
+
+
+GGally::ggpairs(XData %>% dplyr::select(exposition, NDVI, waterways_dist, sea_dist, pente, insolation, accum_prec_Manu, accum_prec))
+
+
+pairs(XData %>% dplyr::select(accum_prec_Manu, accum_prec, dry_month_prec, wet_month_prec))
+
+pairs(XData %>% dplyr::select(min_temp, min_temp_Manu, max_temp, max_temp_Manu, mean_temp, mean_temp_Manu))
 
 # READ AND MODIFY PHYLO DATA 
 ################################################################################
