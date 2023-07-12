@@ -82,21 +82,21 @@ ggplot(data=XData, aes(x=accum_prec, group=exposition, fill=exposition)) +
   geom_density(adjust=1.5, alpha=.4) +
   scale_fill_viridis(discrete=T) +
   scale_color_viridis(discrete=T)
-p2
 
 
-# explore the extra variables and check for correlations
-XData |>
-  dplyr::select(exposition, NDVI, waterways_dist, sea_dist, pente, insolation, accum_prec_Manu, accum_prec) |>
-  summary()
 
-
-GGally::ggpairs(XData %>% dplyr::select(exposition, NDVI, waterways_dist, sea_dist, pente, insolation, accum_prec_Manu, accum_prec))
-
-
-pairs(XData %>% dplyr::select(accum_prec_Manu, accum_prec, dry_month_prec, wet_month_prec))
-
-pairs(XData %>% dplyr::select(min_temp, min_temp_Manu, max_temp, max_temp_Manu, mean_temp, mean_temp_Manu))
+# # explore the extra variables and check for correlations
+# XData |>
+#   dplyr::select(exposition, NDVI, waterways_dist, sea_dist, pente, insolation, accum_prec_Manu, accum_prec) |>
+#   summary()
+# 
+# 
+# GGally::ggpairs(XData %>% dplyr::select(exposition, NDVI, waterways_dist, sea_dist, pente, insolation, accum_prec_Manu, accum_prec))
+# 
+# 
+# pairs(XData %>% dplyr::select(accum_prec_Manu, accum_prec, dry_month_prec, wet_month_prec))
+# 
+# pairs(XData %>% dplyr::select(min_temp, min_temp_Manu, max_temp, max_temp_Manu, mean_temp, mean_temp_Manu))
 
 # READ AND MODIFY PHYLO DATA 
 ################################################################################
@@ -122,9 +122,6 @@ if (crozet){
 ################################################################################
 
 source("process_traits.R")
-
-
-dim(t2)
 
 # keep only those species in the community mat, the phylo_mat and the env_vars 
 Y = Y[rownames(Y) %in% keep_nums,plant_sp]
@@ -160,8 +157,9 @@ TrData = t2
 ##################################################################################################
 # SET UP THE MODEL (BEGINNING)
 ##################################################################################################
-# STUDY DESIGN
-studyDesign = data.frame(site=XData$numero_observation, id=XData$id)
+# GLOBAL FORMULAS COMMON TO ALL MODELS:
+# studydesign
+studyDesign = data.frame(site=XData$numero_observation)
 # RANDOM EFFECT STRUCTURE, HERE Site (hierarchical study design)
 rL.site = HmscRandomLevel(units = levels(studyDesign$site))
 # and optionally id, if we are interested in species associations at that level
@@ -186,45 +184,31 @@ if (crozet){
                   ranLevels=list(site=rL.site))
   
   
-  # PRESENCE-ABSENCE MODEL FOR INDIVIDUAL SPECIES (COMMON ONLY)
- 
+  # site and species associations as random levels, but no sData
   studyDesign = data.frame(site=XData$numero_observation, id=XData$id)
   rL.site = HmscRandomLevel(units = levels(studyDesign$site))
   rL.id = HmscRandomLevel(units = levels(studyDesign$id))
   
   m_site_id = Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
-           TrData = TrData, TrFormula = TrFormula,
-           phyloTree = phylo_cro,
-           distr="probit",
-           studyDesign = studyDesign, ranLevels=list(site=rL.site, id=rL.id))
+                   TrData = TrData, TrFormula = TrFormula,
+                   phyloTree = phylo_cro,
+                   distr="probit",
+                   studyDesign = studyDesign, ranLevels=list(site=rL.site, id=rL.id))
   
   
-  # small spatial model:
+  # small spatial model: species associations and sData
   studyDesign = data.frame(id=XData$id, space = as.factor(1:nrow(XData)))
   rL.spatial = HmscRandomLevel(sData = cro_sites_xy[, 2:3])
   rL.spatial = setPriors(rL.spatial,nfMin=1,nfMax=1)
   m_spatial_small = Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
-                   TrData = TrData, TrFormula = TrFormula,
-                   phyloTree = phylo_cro,
-                   distr="probit",
-                   studyDesign = studyDesign, 
-                   ranLevels=list("space" = rL.spatial))
-
-    # FULL SPATIAL MODEL : added a site random factor
-  studyDesign = data.frame(site=XData$numero_observation, id=XData$id, space = as.factor(1:nrow(XData)))
-  rL.spatial = HmscRandomLevel(sData = cro_sites_xy[, 2:3])
-  rL.spatial = setPriors(rL.spatial,nfMin=1,nfMax=1)
-  m_spatial_site = Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
-           TrData = TrData, TrFormula = TrFormula,
-           phyloTree = phylo_cro,
-           distr="probit",
-           studyDesign = studyDesign, 
-           ranLevels=list(site=rL.site, space = rL.spatial))
-
+                         TrData = TrData, TrFormula = TrFormula,
+                         phyloTree = phylo_cro,
+                         distr="probit",
+                         studyDesign = studyDesign, 
+                         ranLevels=list("space" = rL.spatial))
   
   
-  
-}else{
+}else{ # Kerguelen
   # PRESENCE-ABSENCE MODEL FOR INDIVIDUAL SPECIES (COMMON ONLY)
   m = Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
            TrData = TrData, TrFormula = TrFormula,
@@ -238,8 +222,8 @@ if (crozet){
 
 # COMBINING AND SAVING MODELS 
 ################################################################################
-models = list(m_simple, m_site_id, m_spatial_small, m_spatial_site)
-names(models) = c("m_simple", "m_site_id", "m_spatial_small", "m_spatial_site")
+models = list(m_simple, m_site_id, m_spatial_small)
+names(models) = c("m_simple", "m_site_id", "m_spatial_small")
 save(models, file = file.path(modelDir, "unfitted_models.RData"))
 
 
@@ -249,10 +233,12 @@ if (crozet ==TRUE){
 
 # TESTING THAT MODELS FIT WITHOUT ERRORS 
 ##################################################################################################
+Sys.time()
 for(i in 1:length(models)){
   print(i)
   sampleMcmc(models[[i]],samples=2)
 }
+Sys.time()
 
 
 
@@ -277,7 +263,7 @@ while(Lst <= length(samples_list)){
   thin = thin_list[Lst]
   samples = samples_list[Lst]
   print(paste0("thin = ",as.character(thin),"; samples = ",as.character(samples)))
-  filename = file.path(modelDir,paste("S2_fit_models_thin_", as.character(thin),
+  filename = file.path(modelDir,paste("simple_model_thin_", as.character(thin),
                                       "_samples_", as.character(samples),
                                       "_chains_",as.character(nChains),
                                       ".Rdata",sep = ""))
@@ -343,7 +329,7 @@ cat(c("This file contains additional information regarding parameter estimates."
 for (Lst in nst:1) {
   thin = thin_list[Lst]
   samples = samples_list[Lst]
-  filename = file.path(modelDir,paste("S2_fit_models_thin_", as.character(thin),
+  filename = file.path(modelDir,paste("simple_model_thin_", as.character(thin),
                                       "_samples_", as.character(samples),
                                       "_chains_",as.character(nChains),
                                       ".Rdata",sep = ""))
@@ -397,14 +383,14 @@ if(file.exists(filename)){
         R2=MF$SR2
         vals = rbind(vals,R2)
       }
-      filename = file.path(resultDir, paste("parameter_estimates_VP_",modelnames[j],".csv"))
+      filename = file.path(resultDir, paste("parameter_estimates_VP_simple_model",modelnames[j],".csv"))
       write.csv(vals,file=filename)
       if(!is.null(VP$R2T$Beta)){
-        filename = file.path(resultDir,paste("parameter_estimates_VP_R2T_Beta",modelnames[j],".csv"))
+        filename = file.path(resultDir,paste("parameter_estimates_VP_R2T_Beta_simple_model",modelnames[j],".csv"))
         write.csv(VP$R2T$Beta,file=filename)
       }
       if(!is.null(VP$R2T$Y)){
-        filename = file.path(resultDir, paste("parameter_estimates_VP_R2T_Y",modelnames[j],".csv"))
+        filename = file.path(resultDir, paste("parameter_estimates_VP_R2T_Y_simple_model",modelnames[j],".csv"))
         write.csv(VP$R2T$Y,file=filename)
       }
       if(all(var.part.order.explained[[j]]==0)){
@@ -447,7 +433,7 @@ if(file.exists(filename)){
     m = models[[j]]
     if(m$nc>1){
       postBeta = getPostEstimate(m, parName="Beta")
-      filename = file.path(resultDir, paste("parameter_estimates_Beta_",modelnames[j],".xlsx"))
+      filename = file.path(resultDir, paste("parameter_estimates_Beta__simple_model",modelnames[j],".xlsx"))
       me = as.data.frame(t(postBeta$mean))
       me = cbind(m$spNames,me)
       colnames(me) = c("Species",m$covNames)
@@ -539,7 +525,7 @@ if(file.exists(filename)){
         ne = cbind(m$spNames,ne)
         colnames(ne)[1] = ""
         vals = list("Posterior mean"=me,"Pr(x>0)"=po,"Pr(x<0)"=ne)
-        filename = file.path(resultDir, paste("parameter_estimates_Omega_",modelnames[j],"_",names(m$ranLevels)[[r]],".xlsx"))
+        filename = file.path(resultDir, paste("parameter_estimates_Omega__simple_model",modelnames[j],"_",names(m$ranLevels)[[r]],".xlsx"))
         writexl::write_xlsx(vals,path = filename)
       }
     }
@@ -604,7 +590,7 @@ library(vioplot)
 # nst = length(thin_list)
 # nChains = 4
 
-text.file = file.path(resultDir,"/MCMC_convergence.txt")
+text.file = file.path(resultDir,"/MCMC_convergence_simple_model.txt")
 cat("MCMC Convergennce statistics\n\n",file=text.file,sep="")
 
 ma.beta = NULL
@@ -623,7 +609,7 @@ while(Lst <= nst){
   samples = samples_list[Lst]
   
   
-  filename = file.path(modelDir,paste("S2_fit_models_thin_", as.character(thin),
+  filename = file.path(modelDir,paste("simple_model_thin_", as.character(thin),
                                       "_samples_", as.character(samples),
                                       "_chains_",as.character(nChains),
                                       ".Rdata",sep = ""))
@@ -717,7 +703,7 @@ while(Lst <= nst){
   Lst = Lst + 1
 }
 
-pdf(file= file.path(resultDir,"/MCMC_convergence.pdf"))
+pdf(file= file.path(resultDir,"/MCMC_convergence_simple_model.pdf"))
 if(showBeta){
   par(mfrow=c(2,1))
   vioplot(ma.beta,col=rainbow_hcl(nm),names=na.beta,ylim=c(0,max(ma.beta)),main="psrf(beta)")
@@ -782,11 +768,11 @@ Lst = 1
 while(Lst <= length(samples_list)){
   thin = thin_list[Lst]
   samples = samples_list[Lst]
-  filename.in = file.path(modelDir,paste("S2_fit_models_thin_", as.character(thin),
+  filename.in = file.path(modelDir,paste("simple_model_thin_", as.character(thin),
                                          "_samples_", as.character(samples),
                                          "_chains_",as.character(nChains),
                                          ".Rdata",sep = ""))
-  filename.out = file.path(modelDir,paste("MF_thin_", as.character(thin),
+  filename.out = file.path(modelDir,paste("simple_model_MF_thin_", as.character(thin),
                                           "_samples_", as.character(samples),
                                           "_chains_",as.character(nChains),
                                           "_nfolds_", as.character(nfolds),
@@ -853,7 +839,7 @@ for (Lst in nst:1) {
   thin = thin_list[Lst]
   samples = samples_list[Lst]
   
-  filename = file.path(modelDir,paste("MF_thin_", as.character(thin),
+  filename = file.path(modelDir,paste("simple_model_MF_thin_", as.character(thin),
                                       "_samples_", as.character(samples),
                                       "_chains_",as.character(nChains),
                                       "_nfolds_", as.character(nfolds),
@@ -865,7 +851,7 @@ if(file.exists(filename)){
   
   nm = length(MF)
   modelnames = names(MF)
-  pdf(file = file.path(resultDir,paste0("/model_fit_nfolds_",nfolds,".pdf")))
+  pdf(file = file.path(resultDir,paste0("/simple_model_fit_nfolds_",nfolds,".pdf")))
   for(j in 1:nm){
     cMF = MF[[j]]
     cMFCV = MFCV[[j]]
@@ -1033,13 +1019,13 @@ library(writexl)
 # nst = length(thin_list)
 # nChains = 4
 
-text.file = file.path(resultDir,"/parameter_estimates.txt")
+text.file = file.path(resultDir,"/parameter_estimates_simple_model.txt")
 cat(c("This file contains additional information regarding parameter estimates.","\n","\n",sep=""),file=text.file)
 
 for (Lst in nst:1) {
   thin = thin_list[Lst]
   samples = samples_list[Lst]
-  filename = file.path(modelDir,paste("S2_fit_models_thin_", as.character(thin),
+  filename = file.path(modelDir,paste("simple_model_thin_", as.character(thin),
                                       "_samples_", as.character(samples),
                                       "_chains_",as.character(nChains),
                                       ".Rdata",sep = ""))
@@ -1064,7 +1050,7 @@ if(file.exists(filename)){
   
   modelnames = names(models)
   
-  pdf(file= file.path(resultDir,"parameter_estimates.pdf"))
+  pdf(file= file.path(resultDir,"parameter_estimates_simple_model.pdf"))
   for(j in 1:nm){
     cat(c("\n",names(models)[j],"\n","\n"),file=text.file,sep="",append=TRUE)
     m = models[[j]]
@@ -1093,14 +1079,14 @@ if(file.exists(filename)){
         R2=MF$SR2
         vals = rbind(vals,R2)
       }
-      filename = file.path(resultDir, paste("parameter_estimates_VP_",modelnames[j],".csv"))
+      filename = file.path(resultDir, paste("parameter_estimates_VP_simple_model",modelnames[j],".csv"))
       write.csv(vals,file=filename)
       if(!is.null(VP$R2T$Beta)){
-        filename = file.path(resultDir,paste("parameter_estimates_VP_R2T_Beta",modelnames[j],".csv"))
+        filename = file.path(resultDir,paste("parameter_estimates_VP_R2T_Beta_simple_model",modelnames[j],".csv"))
         write.csv(VP$R2T$Beta,file=filename)
       }
       if(!is.null(VP$R2T$Y)){
-        filename = file.path(resultDir, paste("parameter_estimates_VP_R2T_Y",modelnames[j],".csv"))
+        filename = file.path(resultDir, paste("parameter_estimates_VP_R2T_Y_simple_model",modelnames[j],".csv"))
         write.csv(VP$R2T$Y,file=filename)
       }
       if(all(var.part.order.explained[[j]]==0)){
@@ -1143,7 +1129,7 @@ if(file.exists(filename)){
     m = models[[j]]
     if(m$nc>1){
       postBeta = getPostEstimate(m, parName="Beta")
-      filename = file.path(resultDir, paste("parameter_estimates_Beta_",modelnames[j],".xlsx"))
+      filename = file.path(resultDir, paste("parameter_estimates_Beta_simple_model",modelnames[j],".xlsx"))
       me = as.data.frame(t(postBeta$mean))
       me = cbind(m$spNames,me)
       colnames(me) = c("Species",m$covNames)
@@ -1235,7 +1221,7 @@ if(file.exists(filename)){
         ne = cbind(m$spNames,ne)
         colnames(ne)[1] = ""
         vals = list("Posterior mean"=me,"Pr(x>0)"=po,"Pr(x<0)"=ne)
-        filename = file.path(resultDir, paste("parameter_estimates_Omega_",modelnames[j],"_",names(m$ranLevels)[[r]],".xlsx"))
+        filename = file.path(resultDir, paste("parameter_estimates_Omega_simple_model",modelnames[j],"_",names(m$ranLevels)[[r]],".xlsx"))
         writexl::write_xlsx(vals,path = filename)
       }
     }
@@ -1297,7 +1283,7 @@ library(ggplot2)
 for (Lst in nst:4) {
   thin = thin_list[Lst]
   samples = samples_list[Lst]
-  filename = file.path(modelDir,paste("S2_fit_models_thin_", as.character(thin),
+  filename = file.path(modelDir,paste("simple_model_thin_", as.character(thin),
                                       "_samples_", as.character(samples),
                                       "_chains_",as.character(nChains),
                                       ".Rdata",sep = ""))
@@ -1320,7 +1306,7 @@ if(file.exists(filename)){
     for(j in 1:nm) env.list[[j]] = 0
   }
   
-  pdf(file= file.path(resultDir,"predictions.pdf"))
+  pdf(file= file.path(resultDir,"simple_model_predictions.pdf"))
   for(j in 1:nm){
     m = models[[j]]
     if(all(env.list[[j]]==0)){
