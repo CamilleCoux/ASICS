@@ -1,26 +1,26 @@
 
 # run 4: step 3 : EXAMINE PARAMETERS
 
-
-crozet = TRUE
-
-# SET DIRECTORIES 
-if (crozet){
-  localDir = "cro"
-  if(!dir.exists(localDir)) dir.create(localDir)
-  modelDir = file.path(localDir, "models/run_4")
-  if(!dir.exists(modelDir)) dir.create(modelDir)
-}else{
-  localDir = "ker"
-  if(!dir.exists(localDir)) dir.create(localDir)
-  modelDir = file.path(localDir, "models/run_4/")
-  if(!dir.exists(modelDir)) dir.create(modelDir)
-}
-
-
-resultDir = file.path(localDir, "results/run4")
-if (!dir.exists(resultDir)) dir.create(resultDir)
-
+# 
+# crozet = TRUE
+# 
+# # SET DIRECTORIES 
+# if (crozet){
+#   localDir = "cro"
+#   if(!dir.exists(localDir)) dir.create(localDir)
+#   modelDir = file.path(localDir, "models/run_4")
+#   if(!dir.exists(modelDir)) dir.create(modelDir)
+# }else{
+#   localDir = "ker"
+#   if(!dir.exists(localDir)) dir.create(localDir)
+#   modelDir = file.path(localDir, "models/run_4/")
+#   if(!dir.exists(modelDir)) dir.create(modelDir)
+# }
+# 
+# 
+# resultDir = file.path(localDir, "results/run4")
+# if (!dir.exists(resultDir)) dir.create(resultDir)
+# 
 
 ## MAKE THE SCRIPT REPRODUCIBLE (END)
 set.seed(1)

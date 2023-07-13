@@ -199,8 +199,10 @@ if (crozet){
   
   # small spatial model: species associations and sData
   studyDesign = data.frame(id=XData$id, space = as.factor(1:nrow(XData)))
-  rL.spatial = HmscRandomLevel(sData = cro_sites_xy[, 2:3])
+  rL.spatial = HmscRandomLevel(sData = cro_sites_xy[, 2:3],  sMethod = 'NNGP', nNeighbours = 10)
   rL.spatial = setPriors(rL.spatial,nfMin=1,nfMax=1)
+  
+  
   m_spatial_small = Hmsc(Y=Y, XData = XData,  XFormula = XFormula,
                          TrData = TrData, TrFormula = TrFormula,
                          phyloTree = phylo_cro,
@@ -226,3 +228,8 @@ if (crozet){
 models = list(m_simple, m_site_id, m_spatial_small)
 names(models) = c("m_simple", "m_site_id", "m_spatial_small")
 save(models, file = file.path(modelDir, "unfitted_models.RData"))
+
+# clean workspace
+rm(list = ls())
+
+crozet=TRUE

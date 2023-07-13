@@ -5,39 +5,46 @@
 # # define whether analysis over Crozet or Kergeulen :
 
 crozet = TRUE
-
-
-# SET DIRECTORIES 
-if (crozet){
-  localDir = "cro"
-  if(!dir.exists(localDir)) dir.create(localDir)
-  modelDir = file.path(localDir, "models/run_4")
-  if(!dir.exists(modelDir)) dir.create(modelDir)
-}else{
-  localDir = "ker"
-  if(!dir.exists(localDir)) dir.create(localDir)
-  modelDir = file.path(localDir, "models/run_4/")
-  if(!dir.exists(modelDir)) dir.create(modelDir)
-}
+library(tidyverse)
+library(ggplot2)
+library(readr)
+library(Hmsc)
+library(ape) 
+library(viridis)
+library(magrittr)
 
 # 
-# resultDir = file.path(localDir, "results/run4")
-# if (!dir.exists(resultDir)) dir.create(resultDir)
-
-if (crozet ==TRUE){
-  load("cro/models/run_4/unfitted_models.RData")
-}
-
+# # SET DIRECTORIES 
+# if (crozet){
+#   localDir = "cro"
+#   if(!dir.exists(localDir)) dir.create(localDir)
+#   modelDir = file.path(localDir, "models/run_4")
+#   if(!dir.exists(modelDir)) dir.create(modelDir)
+# }else{
+#   localDir = "ker"
+#   if(!dir.exists(localDir)) dir.create(localDir)
+#   modelDir = file.path(localDir, "models/run_4/")
+#   if(!dir.exists(modelDir)) dir.create(modelDir)
+# }
+# 
+# # 
+# # resultDir = file.path(localDir, "results/run4")
+# # if (!dir.exists(resultDir)) dir.create(resultDir)
+# 
+# # if (crozet ==TRUE){
+# #   load("cro/models/run_4/unfitted_models.RData")
+# # }
+# 
 
 
 # TESTING THAT MODELS FIT WITHOUT ERRORS 
 ##################################################################################################
-Sys.time()
-for(i in 1:length(models)){
-  print(i)
-  sampleMcmc(models[[i]],samples=2)
-}
-Sys.time()
+# Sys.time()
+# for(i in 1:length(models)){
+#   print(i)
+#   sampleMcmc(models[[i]],samples=2)
+# }
+# Sys.time()
 
 
 
@@ -49,7 +56,7 @@ nParallel = NULL #Default: nParallel = nChains
 nm = length(models)
 samples_list = c(5,250,250)#,250)#,250,250)
 thin_list = c(1,1,10)#,100)# ,1000,10000)
-nChains = 4
+nChains = 2
 nst = length(thin_list)
 
 if(is.null(nParallel)) nParallel = nChains
