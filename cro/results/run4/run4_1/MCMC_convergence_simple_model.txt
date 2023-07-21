@@ -1,0 +1,395 @@
+MCMC Convergennce statistics
+
+
+cro/models/run_4/simple_model_thin_1_samples_5_chains_4.Rdata
+
+
+m_simple
+
+
+beta
+
+Min.   : 1.870  
+1st Qu.: 3.246  
+Median : 4.610  
+Mean   :13.407  
+3rd Qu.:18.558  
+Max.   :66.118  
+
+gamma
+
+Min.   :1.051  
+1st Qu.:1.411  
+Median :1.776  
+Mean   :2.229  
+3rd Qu.:2.488  
+Max.   :6.091  
+
+rho
+
+1.892543
+
+omega
+
+
+site
+
+Min.   : 1.478  
+1st Qu.: 3.973  
+Median : 5.665  
+Mean   : 8.288  
+3rd Qu.:10.836  
+Max.   :34.746  
+
+m_site_id
+
+
+beta
+
+Min.   :  1.543  
+1st Qu.:  5.406  
+Median :  9.622  
+Mean   : 24.379  
+3rd Qu.: 27.114  
+Max.   :144.551  
+
+gamma
+
+Min.   :0.9674  
+1st Qu.:1.2345  
+Median :1.3906  
+Mean   :1.4943  
+3rd Qu.:1.7513  
+Max.   :3.1971  
+
+rho
+
+1.037036
+
+omega
+
+
+site
+
+Min.   :  2.311  
+1st Qu.:  8.284  
+Median : 11.834  
+Mean   : 16.655  
+3rd Qu.: 18.834  
+Max.   :100.550  
+
+id
+
+Min.   : 1.157  
+1st Qu.: 5.018  
+Median : 8.344  
+Mean   :12.125  
+3rd Qu.:14.651  
+Max.   :82.270  
+
+m_spatial_small
+
+
+beta
+
+Min.   : 1.407  
+1st Qu.: 2.553  
+Median : 3.623  
+Mean   :11.394  
+3rd Qu.:20.188  
+Max.   :55.170  
+
+gamma
+
+Min.   :1.007  
+1st Qu.:1.269  
+Median :1.569  
+Mean   :2.184  
+3rd Qu.:2.402  
+Max.   :6.917  
+
+rho
+
+1.184451
+
+omega
+
+
+space
+
+Min.   : 1.190  
+1st Qu.: 2.170  
+Median : 3.851  
+Mean   : 6.562  
+3rd Qu.: 8.037  
+Max.   :65.299  
+
+alpha
+
+
+
+space
+
+NaN
+
+cro/models/run_4/simple_model_thin_1_samples_250_chains_4.Rdata
+
+
+m_simple
+
+
+beta
+
+Min.   : 1.015  
+1st Qu.: 1.064  
+Median : 1.400  
+Mean   : 4.614  
+3rd Qu.: 3.828  
+Max.   :52.289  
+
+gamma
+
+Min.   :1.083  
+1st Qu.:1.182  
+Median :1.481  
+Mean   :1.675  
+3rd Qu.:2.126  
+Max.   :2.855  
+
+rho
+
+1.020556
+
+omega
+
+
+site
+
+Min.   : 1.751  
+1st Qu.: 3.347  
+Median : 4.509  
+Mean   : 4.954  
+3rd Qu.: 6.206  
+Max.   :15.891  
+
+m_site_id
+
+
+beta
+
+Min.   : 1.005  
+1st Qu.: 1.059  
+Median : 1.427  
+Mean   : 4.488  
+3rd Qu.: 5.358  
+Max.   :25.442  
+
+gamma
+
+Min.   :1.053  
+1st Qu.:1.141  
+Median :1.230  
+Mean   :1.308  
+3rd Qu.:1.279  
+Max.   :2.676  
+
+rho
+
+1.083091
+
+omega
+
+
+site
+
+Min.   : 1.457  
+1st Qu.: 4.224  
+Median : 5.132  
+Mean   : 5.904  
+3rd Qu.: 7.511  
+Max.   :15.446  
+
+id
+
+Min.   : 1.538  
+1st Qu.: 3.582  
+Median : 5.519  
+Mean   : 6.009  
+3rd Qu.: 7.932  
+Max.   :16.457  
+
+m_spatial_small
+
+
+beta
+
+Min.   : 1.000  
+1st Qu.: 1.013  
+Median : 1.062  
+Mean   : 5.444  
+3rd Qu.: 6.659  
+Max.   :27.341  
+
+gamma
+
+Min.   :1.020  
+1st Qu.:1.108  
+Median :1.149  
+Mean   :1.204  
+3rd Qu.:1.305  
+Max.   :1.486  
+
+rho
+
+1.001284
+
+omega
+
+
+space
+
+Min.   : 1.105  
+1st Qu.: 1.696  
+Median : 2.827  
+Mean   : 3.454  
+3rd Qu.: 4.549  
+Max.   :10.675  
+
+alpha
+
+
+
+space
+
+NaN
+
+cro/models/run_4/simple_model_thin_10_samples_250_chains_4.Rdata
+
+
+m_simple
+
+
+beta
+
+Min.   : 0.9984  
+1st Qu.: 1.0046  
+Median : 1.0196  
+Mean   : 1.3985  
+3rd Qu.: 1.0569  
+Max.   :11.3327  
+
+gamma
+
+Min.   :0.9986  
+1st Qu.:1.0014  
+Median :1.0044  
+Mean   :1.0072  
+3rd Qu.:1.0114  
+Max.   :1.0257  
+
+rho
+
+0.9981593
+
+omega
+
+
+site
+
+Min.   :1.008  
+1st Qu.:1.173  
+Median :1.454  
+Mean   :2.080  
+3rd Qu.:2.717  
+Max.   :5.364  
+
+m_site_id
+
+
+beta
+
+Min.   :0.9984  
+1st Qu.:1.0036  
+Median :1.0131  
+Mean   :1.1685  
+3rd Qu.:1.0711  
+Max.   :3.5965  
+
+gamma
+
+Min.   :1.000  
+1st Qu.:1.005  
+Median :1.009  
+Mean   :1.010  
+3rd Qu.:1.015  
+Max.   :1.030  
+
+rho
+
+1.002462
+
+omega
+
+
+site
+
+Min.   :1.239  
+1st Qu.:2.923  
+Median :3.620  
+Mean   :3.784  
+3rd Qu.:4.462  
+Max.   :7.192  
+
+id
+
+Min.   :1.400  
+1st Qu.:2.815  
+Median :3.573  
+Mean   :3.758  
+3rd Qu.:4.160  
+Max.   :7.768  
+
+m_spatial_small
+
+
+beta
+
+Min.   :0.998  
+1st Qu.:1.004  
+Median :1.019  
+Mean   :1.766  
+3rd Qu.:1.990  
+Max.   :6.635  
+
+gamma
+
+Min.   :1.026  
+1st Qu.:1.042  
+Median :1.109  
+Mean   :1.193  
+3rd Qu.:1.242  
+Max.   :1.814  
+
+rho
+
+1.003408
+
+omega
+
+
+space
+
+Min.   : 1.111  
+1st Qu.: 1.545  
+Median : 2.453  
+Mean   : 4.121  
+3rd Qu.: 4.808  
+Max.   :23.145  
+
+alpha
+
+
+
+space
+
+NaN

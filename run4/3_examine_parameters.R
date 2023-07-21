@@ -51,13 +51,13 @@ library(writexl)
 nst = length(thin_list)
 # nChains = 2
 
-text.file = file.path(resultDir,"/parameter_estimates_model1.txt")
+text.file = file.path(resultDir,"parameter_estimates_run4.txt")
 cat(c("This file contains additional information regarding parameter estimates.","\n","\n",sep=""),file=text.file)
 
 for (Lst in nst:1) {
   thin = thin_list[Lst]
   samples = samples_list[Lst]
-  filename = file.path(modelDir,paste("simple_model_thin_", as.character(thin),
+  filename = file.path(modelDir,paste("run4_thin_", as.character(thin),
                                       "_samples_", as.character(samples),
                                       "_chains_",as.character(nChains),
                                       ".Rdata",sep = ""))
@@ -82,7 +82,7 @@ if(file.exists(filename)){
   
   modelnames = names(models)
   
-  pdf(file= file.path(resultDir,"parameter_estimates_ex2.pdf"))
+  pdf(file= file.path(resultDir,"parameter_estimates_run4.pdf"))
   for(j in 1:nm){
     cat(c("\n",names(models)[j],"\n","\n"),file=text.file,sep="",append=TRUE)
     m = models[[j]]
@@ -111,14 +111,14 @@ if(file.exists(filename)){
         R2=MF$SR2
         vals = rbind(vals,R2)
       }
-      filename = file.path(resultDir, paste("parameter_estimates_VP_simple_model",modelnames[j],".csv"))
+      filename = file.path(resultDir, paste("parameter_estimates_VP_run4",modelnames[j],".csv"))
       write.csv(vals,file=filename)
       if(!is.null(VP$R2T$Beta)){
-        filename = file.path(resultDir,paste("parameter_estimates_VP_R2T_Beta_simple_model",modelnames[j],".csv"))
+        filename = file.path(resultDir,paste("parameter_estimates_VP_R2T_Beta_run4",modelnames[j],".csv"))
         write.csv(VP$R2T$Beta,file=filename)
       }
       if(!is.null(VP$R2T$Y)){
-        filename = file.path(resultDir, paste("parameter_estimates_VP_R2T_Y_simple_model",modelnames[j],".csv"))
+        filename = file.path(resultDir, paste("parameter_estimates_VP_R2T_Y_run4",modelnames[j],".csv"))
         write.csv(VP$R2T$Y,file=filename)
       }
       if(all(var.part.order.explained[[j]]==0)){
@@ -161,7 +161,7 @@ if(file.exists(filename)){
     m = models[[j]]
     if(m$nc>1){
       postBeta = getPostEstimate(m, parName="Beta")
-      filename = file.path(resultDir, paste("parameter_estimates_Beta__simple_model",modelnames[j],".xlsx"))
+      filename = file.path(resultDir, paste("parameter_estimates_Beta_run4",modelnames[j],".xlsx"))
       me = as.data.frame(t(postBeta$mean))
       me = cbind(m$spNames,me)
       colnames(me) = c("Species",m$covNames)
@@ -253,10 +253,11 @@ if(file.exists(filename)){
         ne = cbind(m$spNames,ne)
         colnames(ne)[1] = ""
         vals = list("Posterior mean"=me,"Pr(x>0)"=po,"Pr(x<0)"=ne)
-        filename = file.path(resultDir, paste("parameter_estimates_Omega__simple_model",modelnames[j],"_",names(m$ranLevels)[[r]],".xlsx"))
+        filename = file.path(resultDir, paste("parameter_estimates_Omega__run4",modelnames[j],"_",names(m$ranLevels)[[r]],".xlsx"))
         writexl::write_xlsx(vals,path = filename)
       }
     }
   }
   dev.off()
 }
+

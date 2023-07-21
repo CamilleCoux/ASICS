@@ -15,56 +15,58 @@ source("run4/1_define_models.R")
 load("cro/models/run_4/unfitted_models.RData")
 
 # 2. run crash tests for the 3 models
-# simple model ---------------------------
-models <- purrr::keep(models, names(models)=="m_simple")
+# # simple model -----------------------------------------------------------------
+# models <- purrr::keep(models, names(models)=="m_simple")
+# 
+# # SET DIRECTORIES for simple model run:
+# if (crozet){
+#   localDir = "cro"
+#   if(!dir.exists(localDir)) dir.create(localDir)
+#   modelDir = file.path(localDir, "models/run_4/simple_model")
+#   if(!dir.exists(modelDir)) dir.create(modelDir)
+# }else{
+#   localDir = "ker"
+#   if(!dir.exists(localDir)) dir.create(localDir)
+#   modelDir = file.path(localDir, "models/run_4/simple_model")
+#   if(!dir.exists(modelDir)) dir.create(modelDir)
+# }
+# 
+# resultDir = file.path(localDir, "results/run4/simple_model")
+# if (!dir.exists(resultDir)) dir.create(resultDir)
+# 
+# source("run4/2_test_runs.R")
+# 
+# # end crash test simple model ------------------------------------------------
 
-# SET DIRECTORIES for simple model run:
-if (crozet){
-  localDir = "cro"
-  if(!dir.exists(localDir)) dir.create(localDir)
-  modelDir = file.path(localDir, "models/run_4/simple_model")
-  if(!dir.exists(modelDir)) dir.create(modelDir)
-}else{
-  localDir = "ker"
-  if(!dir.exists(localDir)) dir.create(localDir)
-  modelDir = file.path(localDir, "models/run_4/simple_model")
-  if(!dir.exists(modelDir)) dir.create(modelDir)
-}
+# load("cro/models/run_4/unfitted_models.RData")
 
-resultDir = file.path(localDir, "results/run4/simple_model")
-if (!dir.exists(resultDir)) dir.create(resultDir)
-
-source("run4/2_test_runs.R")
-
-# end crash test simple model --------------------------------------------------
-
-load("cro/models/run_4/unfitted_models.RData")
-
-# m_site_id ---------------------------
-models <- purrr::keep(models, names(models)=="m_site_id")
-
-# SET DIRECTORIES for simple model run:
-if (crozet){
-  localDir = "cro"
-  if(!dir.exists(localDir)) dir.create(localDir)
-  modelDir = file.path(localDir, "models/run_4/m_site_id")
-  if(!dir.exists(modelDir)) dir.create(modelDir)
-}else{
-  localDir = "ker"
-  if(!dir.exists(localDir)) dir.create(localDir)
-  modelDir = file.path(localDir, "models/run_4/m_site_id")
-  if(!dir.exists(modelDir)) dir.create(modelDir)
-}
-
-resultDir = file.path(localDir, "results/run4/m_site_id")
-if (!dir.exists(resultDir)) dir.create(resultDir)
-
-source("run4/2_test_runs.R")
-
-# end crash test m_site_id -----------------------------------------------------
+# # m_site_id ---------------------------
+# models <- purrr::keep(models, names(models)=="m_site_id")
+# 
+# # SET DIRECTORIES for simple model run:
+# if (crozet){
+#   localDir = "cro"
+#   if(!dir.exists(localDir)) dir.create(localDir)
+#   modelDir = file.path(localDir, "models/run_4/m_site_id")
+#   if(!dir.exists(modelDir)) dir.create(modelDir)
+# }else{
+#   localDir = "ker"
+#   if(!dir.exists(localDir)) dir.create(localDir)
+#   modelDir = file.path(localDir, "models/run_4/m_site_id")
+#   if(!dir.exists(modelDir)) dir.create(modelDir)
+# }
+# 
+# resultDir = file.path(localDir, "results/run4/m_site_id")
+# if (!dir.exists(resultDir)) dir.create(resultDir)
+# 
+# source("run4/2_test_runs.R")
+# 
+# # end crash test m_site_id ---------------------------------------------------
 
 
-load("cro/models/run_4/unfitted_models.RData")
+# load("cro/models/run_4/unfitted_models.RData")
+
+
 
 # m_spatial_small --------------------------------------------------------------
 models <- purrr::keep(models, names(models)=="m_spatial_small")
@@ -103,22 +105,72 @@ crozet=TRUE
 load("cro/models/run_4/unfitted_models.RData")
 
 # 2. run crash tests for the 3 models
-models <- purrr::keep(models, names(models)=="m_simple")
+# # simple model -----------------------------------------------------------------
+# load("cro/models/run_4/unfitted_models.RData")
+# models <- purrr::keep(models, names(models)=="m_simple")
+# 
+# # SET DIRECTORIES for simple model run:
+# if (crozet){
+#   localDir = "cro"
+#   if(!dir.exists(localDir)) dir.create(localDir)
+#   modelDir = file.path(localDir, "models/run_4/simple_model/")
+#   if(!dir.exists(modelDir)) dir.create(modelDir)
+# }else{
+#   localDir = "ker"
+#   if(!dir.exists(localDir)) dir.create(localDir)
+#   modelDir = file.path(localDir, "models/run_4/simple_model")
+#   if(!dir.exists(modelDir)) dir.create(modelDir)
+# }
+# 
+# resultDir = file.path(localDir, "results/run4/simple_model/")
+# if (!dir.exists(resultDir)) dir.create(resultDir)
+# 
+# source("run4/3_examine_parameters.R")
+# # end parameters estim simple model ------------------------------------------
+
+# 
+# # m_site_id model --------------------------------------------------------------
+# load("cro/models/run_4/unfitted_models.RData")
+# models <- purrr::keep(models, names(models)=="m_site_id")
+# 
+# # SET DIRECTORIES for simple model run:
+# if (crozet){
+#   localDir = "cro"
+#   if(!dir.exists(localDir)) dir.create(localDir)
+#   modelDir = file.path(localDir, "models/run_4/m_site_id/")
+#   if(!dir.exists(modelDir)) dir.create(modelDir)
+# }else{
+#   localDir = "ker"
+#   if(!dir.exists(localDir)) dir.create(localDir)
+#   modelDir = file.path(localDir, "models/run_4/m_site_id")
+#   if(!dir.exists(modelDir)) dir.create(modelDir)
+# }
+# 
+# resultDir = file.path(localDir, "results/run4/m_site_id/")
+# if (!dir.exists(resultDir)) dir.create(resultDir)
+# 
+# source("run4/3_examine_parameters.R")
+# # end parameters estim m_site_id ---------------------------------------------
+
+# m_spatial_small model --------------------------------------------------------
+load("cro/models/run_4/unfitted_models.RData")
+models <- purrr::keep(models, names(models)=="m_spatial_small")
 
 # SET DIRECTORIES for simple model run:
 if (crozet){
   localDir = "cro"
   if(!dir.exists(localDir)) dir.create(localDir)
-  modelDir = file.path(localDir, "models/run_4/simple_model/")
+  modelDir = file.path(localDir, "models/run_4/m_spatial_small/")
   if(!dir.exists(modelDir)) dir.create(modelDir)
 }else{
   localDir = "ker"
   if(!dir.exists(localDir)) dir.create(localDir)
-  modelDir = file.path(localDir, "models/run_4/simple_model")
+  modelDir = file.path(localDir, "models/run_4/m_spatial_small/")
   if(!dir.exists(modelDir)) dir.create(modelDir)
 }
 
-resultDir = file.path(localDir, "results/run4/simple_model/")
+resultDir = file.path(localDir, "results/run4/m_spatial_small/")
 if (!dir.exists(resultDir)) dir.create(resultDir)
 
-
+source("run4/3_examine_parameters.R")
+# end parameters estim m_spatial_small -----------------------------------------------

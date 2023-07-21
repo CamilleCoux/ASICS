@@ -1,0 +1,44 @@
+This file contains additional information regarding parameter estimates. 
+ 
+ 
+cro/models/run_4/simple_model_thin_10_samples_250_chains_4.Rdata
+
+
+m_simple
+
+
+var.part.order.explained
+
+Acaena magellanica
+Azorella selago
+Callitriche antarctica
+Crassula moschata
+Juncus scheuchzerioides
+Leptinella plumosa
+Montia fontana
+Poa cookii
+Pringlea antiscorbutica
+Ranunculus biternatus
+Uncinia compacta
+
+var.part.order.raw
+
+Leptinella plumosa
+Poa cookii
+Azorella selago
+Pringlea antiscorbutica
+Uncinia compacta
+Crassula moschata
+Acaena magellanica
+Montia fontana
+Ranunculus biternatus
+Juncus scheuchzerioides
+Callitriche antarctica
+
+m_site_id
+
+
+var.part.order.explained
+
+Azorella selago
+Acaena magellanica

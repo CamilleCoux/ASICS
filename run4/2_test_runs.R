@@ -65,7 +65,7 @@ while(Lst <= length(samples_list)){
   thin = thin_list[Lst]
   samples = samples_list[Lst]
   print(paste0("thin = ",as.character(thin),"; samples = ",as.character(samples)))
-  filename = file.path(modelDir,paste("simple_model_thin_", as.character(thin),
+  filename = file.path(modelDir,paste("run4_thin_", as.character(thin),
                                       "_samples_", as.character(samples),
                                       "_chains_",as.character(nChains),
                                       ".Rdata",sep = ""))
