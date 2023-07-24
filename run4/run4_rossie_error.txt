@@ -1,0 +1,21 @@
+[1] "thin = 1; samples = 5"
+[1] "model fit had been computed already"
+[1] "thin = 1; samples = 250"
+[1] "model fit had been computed already"
+[1] "thin = 10; samples = 250"
+[1] "model fit had been computed already"
+Error in VPr$vals[, k] : subscript out of bounds
+In addition: Warning message:
+In plotGamma(m, post = postGamma, supportLevel = support.level.gamma,  :
+  nothing to plot at this level of posterior support
+
+VPr$vals
+                Azorella selago Acaena magellanica
+mean_temp_Manu      0.274027512        0.110253800
+accum_prec_Manu     0.006604716        0.033178442
+NDVI                0.066357293        0.043736217
+waterways_dist      0.020664263        0.001310873
+sea_dist            0.002706699        0.002901944
+insolation          0.001535975        0.058759879
+Random: site        0.112678423        0.021681010
+Random: id          0.001409084        0.200142167
