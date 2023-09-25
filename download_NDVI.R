@@ -140,29 +140,95 @@ for (i in ncfilenames){
 
 
 
-i <- "AVHRR-Land_v005_AVH13C1_NOAA-07_19810624_c20170610041337.nc"
+# https://www.r-bloggers.com/2016/08/a-netcdf-4-in-r-cheatsheet/
+
+
+# Get a list of the NetCDF's R attributes:
+attributes(ncin)$names
+
+##  [1] "filename"    "writable"    "id"          "safemode"    "format"     
+##  [6] "is_GMT"      "groups"      "fqgn2Rindex" "ndims"       "natts"      
+## [11] "dim"         "unlimdimid"  "nvars"       "var"
+
+print(paste("The file has",ncin$nvars,"variables,",ncin$ndims,"dimensions and",ncin$natts,"NetCDF attributes"))
+
+
+attributes(ncin$var)$names
+ncatt_get(ncin, attributes(ncin$var)$names[4])
+
+ndvi <- ncvar_get(ncin, attributes(ncin$var)$names[4], collapse_degen = FALSE)
+
+dim(ndvi)
+
+# ok so these are biweelky measures of ndvi, starting from 1/1/82, and until 
+# the next layer. So need to average over 12 layers of array... + the next 12 
+# ones, to get a yearmy mean.
+
+# Retrieve the latitude and longitude values.
+attributes(ncin$dim)$names
+
+nc_lat <- ncvar_get( ncin, attributes(ncin$dim)$names[4])
+nc_lon <- ncvar_get( ncin, attributes(ncin$dim)$names[3])
+
+print(paste(dim(nc_lat), "latitudes and", dim(nc_lon), "longitudes"))
+
+
+essai <- apply(ndvi, 1:2, mean)
+
+
+# https://rdrr.io/cran/daymetr/man/nc2tif.html
+
+
+
+
+nc_close(ncin)
+
+
+
+
+
+
 
 
 
 ##### end open NetCDF files: ##################################################
 
+# chatGPT version
+
+nc_stars <- stars::read_stars(paste0(ncpath, "ndvi3g_geo_v1_1_1982_0106.nc4"), 
+                              sf_column = "short ndvi") 
 
 
 
-# You may need to install the httr package.
-# install.packages("httr")
-library(httr)
-netrc_path <- "/path/to/.netrc"
-cookie_path <- "/path/to/.urs_cookies"
-downloaded_file_path <- "/path/to/filename"
-# Before using the script
-#Set up your ~/.netrc file as listed here: https://wiki.earthdata.nasa.gov/display/EL/How+To+Access+Data+With+cURL+And+Wget
-set_config(config(followlocation=1,netrc=1,netrc_file=netrc_path,cookie=cookie_path,cookiefile=cookie_path,cookiejar=cookie_path))
-httr::GET(url = "https://disc2.gesdisc.eosdis.nasa.gov/data/TRMM_RT/TRMM_3B42RT_Daily.7/2000/03/3B42RT_Daily.20000301.7.nc4",
-          write_disk(downloaded_file_path, overwrite = TRUE))
+ndvi <- ncvar_get(ncin, "ndvi")
+lon <- ncvar_get(ncin, "lon")
+lat <- ncvar_get(ncin, "lat")
+time <- ncvar_get(ncin, "time")
+
+# Create a stars object manually
+st_ndvi <- st(as.data.frame(lon, lat, time), ndvi, crs = st_crs("+proj=longlat +datum=WGS84"))
+
+# Set axis names
+st_dimensions(st_ndvi)[["z"]] <- c("time")
+st_dimensions(st_ndvi)[["x"]] <- c("lon")
+st_dimensions(st_ndvi)[["y"]] <- c("lat")
+
+# Create a stars object manually
+st_dimensions <- st_dimensions(c("lon", "lat", "time"))
+st_ndvi <- st_sfc(as.array(ndvi, dim = st_dimensions), crs = st_crs("+proj=longlat +datum=WGS84"))
 
 
+# Create dimensions
+dim <- st_dimensions(
+  c("lon", "lat"),  # Spatial dimensions (longitude and latitude)
+  list(c(51.6, 51.9), c(-46.5, -46.3))  # Dimension extents
+)
+attributes <- st_crs("+proj=longlat +datum=WGS84")
 
+st_ncin <- stars::st_as_stars(
+  list(ndvi = ndvi, lon=lon, lat=lat, time=time),
+  dimensions = 
+)
 
-
-
+st_ndvi <- stars::st_as_stars(ndvi, dimensions = list(x = "lon", y = "lat", z = "time"), 
+                              axes = list(x = "Longitude", y = "Latitude", z = "Time"))
