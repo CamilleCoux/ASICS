@@ -126,12 +126,12 @@ for (url in ncfiles2) {
 
 ##### open NetCDF files: ##################################################
 
-ncpath <- "C:/Users/Camille/Documents/ASICS/data/NDVI/" ## changi this to rossie paths
+ncpath <- here::here("../data/NDVI/") ## changi this to rossie paths
 
 ncfilenames <- list.files(ncpath)[grep("\\.nc4", list.files(ncpath))]
 
 for (i in ncfilenames){
-  ncname <- paste0(ncpath, i)
+  ncname <- paste0(ncpath %>% gsub("\\/ASICS_code\\/\\.\\.", "", .), "/", i)
   ncin <- ncdf4::nc_open(ncname)
   
   terra::writeRaster(ncin, paste0(ncpath, i, ".tif"))
@@ -192,12 +192,27 @@ nc_close(ncin)
 
 
 ##### end open NetCDF files: ##################################################
+##### 
+##### 
+##### 
+
+install.packages("ncmeta")
+essai <- terra::rast(here::here("../data/NDVI/ndvi3g_geo_v1_1_1982_0106.nc4"))
+# ok this is pretty neat. Now I want to average to yealy means
+essai2 <- terra::rast(here::here("../data/NDVI/ndvi3g_geo_v1_1_1982_0712.nc4"))
+
+essai2$percentile_1 %>% writeRaster("../data/NDVI/essai2_perc1.tif")
+ 
+
+
+
+
+
 
 # chatGPT version
 
 nc_stars <- stars::read_stars(paste0(ncpath, "ndvi3g_geo_v1_1_1982_0106.nc4"), 
                               sf_column = "short ndvi") 
-
 
 
 ndvi <- ncvar_get(ncin, "ndvi")
