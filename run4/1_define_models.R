@@ -4,7 +4,7 @@
 # further changes made following François' recommendations (meeting of 4/04/23)
 
 # # define whether analysis over Crozet or Kergeulen :
-# crozet = TRUE
+# crozet = FALSE
 
 set.seed(1)
 library(tidyverse)

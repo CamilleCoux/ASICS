@@ -1,0 +1,116 @@
+//area of interest
+var geometry = ee.Geometry.Polygon(
+        [[[68.40190117242007,-49.82755311172748],
+          [70.65409843804507,-49.82755311172748],
+          [70.65409843804507,-48.462200513751874],
+          [68.40190117242007,-48.462200513751874]]]);
+
+//input the time interval
+var from = '1999-01-01';
+var to = '2010-12-31';
+
+//read the image collection and apply a filter for scenes on the AOI and between the start and end dates
+var landsat7 = ee.ImageCollection('LANDSAT/LE07/C02/T1_L2')
+.filterBounds(ker).filterDate(from,to)
+
+print(landsat7)
+
+// Applies scaling factors.
+function applyScaleFactors(image) {
+  var opticalBands = image.select('SR_B.').multiply(0.0000275).add(-0.2);
+  var thermalBand = image.select('ST_B6').multiply(0.00341802).add(149.0);
+  return image.addBands(opticalBands, null, true)
+              .addBands(thermalBand, null, true);
+}
+landsat7 = landsat7.map(applyScaleFactors);
+
+//Visualization (pallete) 
+var visualization = {
+  bands: ['SR_B3', 'SR_B2', 'SR_B1'],
+  min: 0.0,
+  max: 0.3,
+};
+
+// Lists all selected images 
+var listOfImages = landsat7.toList(landsat7.size());
+
+//var composite=landsat7.median().clip(ker);
+//uses the median value of all images to calculate the final pixel value
+var composite=landsat7.median();
+
+//Map.addLayer(composite, visualization, 'L7 Composite');
+
+var landsat7FiltClouds=landsat7
+   .filterBounds(ker)
+   .filterDate(from, to)
+   //.filter(ee.Filter.lessThan('CLOUD_COVER', 50)) //this doesn't work so well in this case, because the sea could be cloudless but the island covered, so this results in the same thing as the above image
+   ;
+
+// Create a composite from the filtered imagery.
+//var compositeFiltClouds=landsat7FiltClouds.median().clip(ker);
+var compositeFiltClouds=landsat7FiltClouds.median();
+
+//Map.addLayer(compositeFiltClouds, visualization,'L7 Composite cloud filter');
+
+// Print size of collections, for comparison.
+//print('Size landsat7 collection', landsat7.size());
+//print('Size landsat7FiltClouds collection', landsat7FiltClouds.size());
+
+
+// Define the cloud mask function.
+function maskSrClouds(image){
+   // Bit 0 - Fill
+   // Bit 1 - Dilated Cloud
+   // Bit 2 - Cirrus
+   // Bit 3 - Cloud
+   // Bit 4 - Cloud Shadow
+   var qaMask=image.select('QA_PIXEL').bitwiseAnd(parseInt('11111',
+       2)).eq(0);
+   var saturationMask=image.select('QA_RADSAT').eq(0);
+
+   return image.updateMask(qaMask)
+       .updateMask(saturationMask);
+}
+
+// Apply the cloud mask to the collection.
+var landsat7FiltMasked=landsat7FiltClouds.map(maskSrClouds);
+
+// Create a composite.
+//var landsat7compositeMasked=landsat7FiltMasked.median().clip(ker);
+//uses the median value of all images to calculate the final pixel value, but now it excludes pixels identified as clouds
+var landsat7compositeMasked=landsat7FiltMasked.median();
+
+Map.addLayer(landsat7compositeMasked, visualization, 'L7 composite masked');
+
+// Compute the Normalized Difference Vegetation Index (NDVI).
+var nir = landsat7compositeMasked.select('SR_B4');
+var red = landsat7compositeMasked.select('SR_B3');
+var ndvi = nir.subtract(red).divide(nir.add(red)).rename('NDVI');
+
+// Display the result.
+var ndviParams = {min: -1, max: 1, palette: ['blue', 'white', 'green']};
+Map.addLayer(ndvi, ndviParams, 'NDVI image');
+
+
+
+Export.image.toDrive({
+  image: landsat7compositeMasked,
+  description: 'LS7_KER',
+    folder: 'Camille - FR',
+  fileNamePrefix: 'KER_1999-2010',
+  scale: 30,
+  maxPixels: 1e13,
+  region: geometry,
+  fileFormat: 'GeoTIFF',
+});
+
+Export.image.toDrive({
+  image: ndvi,
+  description: 'ndvi_KER',
+    folder: 'Camille - FR',
+  fileNamePrefix: 'ndviKER_1999-2010',
+  scale: 30,
+  maxPixels: 1e13,
+  region: geometry,
+  fileFormat: 'GeoTIFF',
+});
