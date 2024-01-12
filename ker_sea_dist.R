@@ -1,6 +1,6 @@
 # calculate distance to the sea (shoreline) for Kerguelen:
 
-
+crozet=FALSE
 
 library(sf)
 library(terra)
@@ -8,10 +8,26 @@ library(stars)
 
 
 
-# source("run4/clean_occurrences.R")
+source("run4/clean_occurrences.R")
 
 
-# Calculating distances at the poles
+# Calculating distances from the sea.
+# we have the contour of Ker, and need to calculate the distance of every grid
+# cell to the sea. So we need the grid cells. Let's align on the ones from the
+# other chelsa environmental stuff:
+
+bio1_ker <- terra::rast("../data/chelsa/bio1_downscaled_ker.tif")*0.1-273.15 # this is the downscaled temperature
+# non-na cells:
+no_na <- which(is.na(values(bio1_ker)))
+vec <- 1:ncell(bio1_ker)
+no_na <- vec[-no_na]
+ker_cell_xy <- terra::xyFromCell(bio1_ker, no_na)
+ker_cell_xy %>% st_as_sfc(., st_coordinates(x, y) )
+
+
+
+
+
 
 ker_shp <- sf::st_read("../data/SIG/Contours/KER_contours.shp")
 # plot(ker_shp)
@@ -23,8 +39,9 @@ ker_sites_sf <- sf::st_as_sf(ker_sites_xy, coords=c("longitude", "latitude"), cr
 ker_sites_sf_7079 <- sf::st_as_sf(ker_sites_xy, coords=c("latitude", "longitude"), crs=4326) %>%
  st_transform(crs=7079)
 ker_coord <- ker_sites_sf_7079 %>% st_coordinates() %>% as.data.frame
+
+
 box1 <- st_bbox(c(xmin = 68, xmax = 71, ymax = -50, ymin = -48), crs = st_crs(4326))
-st_as_sf(coords=c())
 mask <- st_difference(box1, ker_shp)
 
 
