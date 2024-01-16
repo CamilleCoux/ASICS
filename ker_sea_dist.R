@@ -22,10 +22,22 @@ no_na <- which(is.na(values(bio1_ker)))
 vec <- 1:ncell(bio1_ker)
 no_na <- vec[-no_na]
 ker_cell_xy <- terra::xyFromCell(bio1_ker, no_na)
-ker_cell_xy %>% st_as_sfc(., st_coordinates(x, y) )
+ker_xy_sf <- ker_cell_xy %>% 
+  as.data.frame %>% 
+  st_as_sf(coords=c("x", "y"), crs = 4326 )
+distances <- sf::st_distance(ker_xy_sf[1:50,], ker_shp)
+
+ker_shp <- terra::vect("../data/SIG/Contours/KER_contours.shp")
+ ggplot() + geom_sf(data=ker_shp) +
+  geom_sf(data=ker_xy_sf[1:50,])
+ 
+ ker_contour <- terra::rasterize(ker_shp, bio1_ker) # ok but it's filled in!
+ 
+# en fait va falloir que je mette des mask sur les rasters de ker
 
 
 
+border_cells <- sf::st_intersection(ker_shp, bio1_ker)
 
 
 
