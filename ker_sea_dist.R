@@ -5,8 +5,8 @@ crozet=FALSE
 library(sf)
 library(terra)
 library(stars)
-
-
+library(ggplot2)
+library(magrittr)
 
 source("run4/clean_occurrences.R")
 
@@ -16,21 +16,76 @@ source("run4/clean_occurrences.R")
 # cell to the sea. So we need the grid cells. Let's align on the ones from the
 # other chelsa environmental stuff:
 
+
+# ideas from here: https://gis.stackexchange.com/questions/243994/how-to-calculate-distance-from-point-to-linestring-in-r-using-sf-library-and-g
+# 
+# 
+# 
 bio1_ker <- terra::rast("../data/chelsa/bio1_downscaled_ker.tif")*0.1-273.15 # this is the downscaled temperature
+ker_shp <- sf::st_read("../data/SIG/Contours/KER_contours.shp")
+
+# crop bio1 and ker_shp:
+ker_vect <- terra::vect(ker_shp)
+terra::crs(ker_vect) == terra::crs(bio1_ker)
+bio1_ker <- terra::project(bio1_ker, ker_vect)
+bio1_ker_crop <- terra::crop(bio1_ker, ker_vect, mask=TRUE)
+plot(bio1_ker_crop)
+plot(bio1_ker)
+plot(ker_vect, add=TRUE)
+
 # non-na cells:
-no_na <- which(is.na(values(bio1_ker)))
-vec <- 1:ncell(bio1_ker)
+no_na <- which(is.na(values(bio1_ker_crop)))
+vec <- 1:ncell(bio1_ker_crop)
 no_na <- vec[-no_na]
-ker_cell_xy <- terra::xyFromCell(bio1_ker, no_na)
+ker_cell_xy <- terra::xyFromCell(bio1_ker_crop, no_na) # extracts the coords of non na bio_ker cells
 ker_xy_sf <- ker_cell_xy %>% 
   as.data.frame %>% 
-  st_as_sf(coords=c("x", "y"), crs = 4326 )
-distances <- sf::st_distance(ker_xy_sf[1:50,], ker_shp)
+  st_as_sf(coords=c("x", "y"), crs = terra::crs(bio1_ker_crop) )
 
-ker_shp <- terra::vect("../data/SIG/Contours/KER_contours.shp")
+# ok now to calculate nearest distances, need to break up the data into smaller
+# tiles, since kerguelen borders are too long. 
+
+terra::ext(bio1_ker_crop)
+terra::ext(bio1_ker)
+
+topleft <- terra::ext(68.420, 69.5, -49.25, -48.4519) 
+topright <-   terra::ext( 69.5, 70.56, -49.25, -48.4519)
+bottomright <-   terra::ext(69.5, 70.56, -50.001, -49.25)
+bottomleft <-   terra::ext(68.420, 69.5, -50.001, -49.25)
+
+topleft_r <- terra::crop(bio1_ker_crop, topleft)
+topright_r <- terra::crop(bio1_ker_crop, topright)
+bottomright_r <- terra::crop(bio1_ker_crop, bottomright)
+bottomleft_r <- terra::crop(bio1_ker_crop, bottomleft)
+
+topleft_v <- terra::crop(ker_vect, topleft)
+topright_v <- terra::crop(ker_vect, topright)
+bottomright_v <- terra::crop(ker_vect, bottomright)
+bottomleft_v <- terra::crop(ker_vect, bottomleft)
+
+
+
+
+dist1 <- sf::st_distance(ker_xy_sf)
+
+
+distances <- sf::st_distance(ker_xy_sf[1000:1050,], ker_shp) # this takes forever
+
+ker_vect <- terra::vect("../data/SIG/Contours/KER_contours.shp")
+
+library(ggplot2)
  ggplot() + geom_sf(data=ker_shp) +
-  geom_sf(data=ker_xy_sf[1:50,])
+  geom_sf(data=ker_xy_sf[1:50,]) # this makes no sense at all
  
+ker_points <- stars::read_stars("../data/chelsa/bio1_downscaled_ker.tif") 
+
+kerp <- st_as_sf(ker_points, as_points=TRUE, merge=FALSE) # not work, or too long
+ 
+crs(bio1_ker) == crs(ker_shp)
+bio1_ker <- terra::project(bio1_ker, ker_shp)
+bio1 <- terra::crop(bio1_ker, ker_shp, mask=TRUE) # still don't think this fits right ...???
+
+plot(bio1)
  ker_contour <- terra::rasterize(ker_shp, bio1_ker) # ok but it's filled in!
  
 # en fait va falloir que je mette des mask sur les rasters de ker
